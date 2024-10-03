@@ -1,15 +1,19 @@
+#ifndef CPU_H
+#define CPU_H
+
 #include <stdint.h>
+#include "../device/objects.h"
 
 #define CPU_FREQUENCY 4'190'000
 
 typedef struct {
 
-} ControlUnit;
+} control_t;
 
 typedef struct {
     uint8_t data;
     uint16_t address;
-} Transport;
+} transport_t;
 
 typedef struct {
     // 16-bit special registers
@@ -31,20 +35,22 @@ typedef struct {
     uint8_t f;
     uint8_t h;
     uint8_t l;
-} Registers;
+} registers_t;
 
 typedef struct {
     uint8_t i1;
     uint8_t i2;
-} ArithUnit;
+} arith_t;
 
 typedef struct {
-    ControlUnit control;
-    Registers registers;
-    ArithUnit arith;
-    Transport buses;
+    control_t control;
+    registers_t registers;
+    arith_t arith;
+    transport_t buses;
     uint16_t id;
 
     uint8_t* exec_op;
     uint8_t* fetch_op;
-} Cpu;
+} cpu_t;
+
+#endif
