@@ -1,5 +1,8 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef CONSTANTS_H_
+#define CONSTANTS_H_
+
+// CPU constants
+#define CPU_FREQUENCY 4190000
 
 // Display constants
 #define DISPLAY_WIDTH 160
@@ -17,7 +20,7 @@
 
 // Memory map
 #define ROM0_START 0x0000
-#define ROM1_STAR 0x4000
+#define ROM1_START 0x4000
 #define VRAM_START 0x8000
 #define CART_START 0xA000
 #define WRAM0_START 0xC000

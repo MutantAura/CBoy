@@ -2,44 +2,47 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
+#include "config/config_state.h"
+#include "cpu/cpu.h"
 #include "device/constants.h"
 #include "device/objects.h"
-#include "cpu/cpu.h"
 
 SDL_Window* main_window;
 SDL_Renderer* renderer;
-SDL_Event event;
+SDL_Event queue;
 
 // Prototypes
-int init_sdl(void);
+int init_sdl(config_t*);
 void input_helper(SDL_Event*, device_t*);
+device_t* init_gb_device();
 
-int main(void) {
+int main(int argc, char** argv) {
     
     // 1. Handle CLI args
-    // TODO
+    config_t* config = create_config(argc, argv);
 
     // 2. Init SDL
-    if (init_sdl() == 0) {
+    if (init_sdl(config) == 0) {
         puts("SDL failed to init. Closing...");
         return 0;
     }
 
     // 3. Init GB device
-    device_t* device = malloc(sizeof(device_t));
-    memset(device, 0, sizeof(device_t));
-    device->power_state = POWER_ON;
+    device_t* device = init_gb_device();
     
     // 4. Verify and Load ROM
 
     // 5. Enter SDL loop
     while (device->power_state == POWER_ON) {
         // 5a. Poll input
-        while (SDL_PollEvent(&event) != 0) {
-            input_helper(&event, device);
+        while (SDL_PollEvent(&queue) != 0) {
+            input_helper(&queue, device);
         }   
 
         // 5b. Tick CPU
+        for (int cycles = 0; cycles < CPU_FREQUENCY; cycles++) {
+            cycles += tick_cpu(&device->cpu_state, device->memory_pool);
+        }
         
         // 5c. Render
 
@@ -48,10 +51,13 @@ int main(void) {
 
         // 5e. Update render timer.
         // TODO
+
+        SDL_Delay(1000/VERT_SYNC);
     }
 
     // 6. Cleanup
     free(device);
+    free(config);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(main_window);
@@ -60,12 +66,15 @@ int main(void) {
     return 0;
 }
 
-int init_sdl(void) {
+int init_sdl(config_t* config) {
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS)) {
         return 0;
     }
 
-    main_window = SDL_CreateWindow("CBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
+    main_window = SDL_CreateWindow("CBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+                                    DISPLAY_WIDTH * config->display_scale, 
+                                    DISPLAY_HEIGHT * config->display_scale, 
+                                    0);
     if (main_window == NULL) {
         return 0;
     }
@@ -76,6 +85,26 @@ int init_sdl(void) {
     }
 
     return 1;
+}
+
+device_t* init_gb_device() {
+    device_t* device = calloc(1, sizeof(device_t));
+
+    device->rom_bank_0 = &device->memory_pool[ROM0_START];
+    device->rom_bank_1 = &device->memory_pool[ROM1_START];
+    device->vram = &device->memory_pool[VRAM_START];
+    device->cart_ram = &device->memory_pool[CART_START];
+    device->wram = &device->memory_pool[WRAM0_START];
+    device->echo_ram = &device->memory_pool[ECHO_START];
+    device->oa_ram = &device->memory_pool[OBJ_START];
+    device->reserved = &device->memory_pool[NA_START];
+    device->io_regs = &device->memory_pool[IO_START];
+    device->high_ram = &device->memory_pool[HRAM_START];
+    device->intrpt_reg = &device->memory_pool[INTRPT_START];
+
+    device->power_state = POWER_ON;
+
+    return device;
 }
 
 void input_helper(SDL_Event* event, device_t* device) {

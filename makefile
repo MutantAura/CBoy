@@ -6,7 +6,7 @@ all:
 		mkdir build ; \
 	fi
 
-	gcc src/main.c src/cpu/*.c src/gfx/*.c -o build/cboy -lm $(CFLAGS) `pkg-config --cflags --libs sdl2`
+	gcc src/main.c src/cpu/*.c src/gfx/*.c src/config/*.c -o build/cboy -lm $(CFLAGS) `pkg-config --cflags --libs sdl2`
 
 release:
 	make clean

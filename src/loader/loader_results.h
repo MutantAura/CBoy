@@ -1,5 +1,5 @@
-#ifndef LOADER_RESULTS_H
-#define LOADER_RESULTS_H
+#ifndef LOADER_RESULTS_H_
+#define LOADER_RESULTS_H_
 
 typedef enum loader_result {
     FAILURE,
