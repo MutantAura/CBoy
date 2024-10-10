@@ -3,9 +3,9 @@
 #include <SDL2/SDL.h>
 
 #include "config/config_state.h"
-#include "cpu/cpu.h"
-#include "device/constants.h"
-#include "device/objects.h"
+#include "cpu/optable.h"
+#include "models/constants.h"
+#include "models/device.h"
 
 SDL_Window* main_window;
 SDL_Renderer* renderer;
@@ -21,14 +21,14 @@ int main(int argc, char** argv) {
     // 1. Handle CLI args
     config_t* config = create_config(argc, argv);
 
-    // 2. Init SDL
+    // 2. Init GB device
+    device_t* device = init_gb_device();
+
+    // 3. Init SDL
     if (init_sdl(config) == 0) {
         puts("SDL failed to init. Closing...");
-        return 0;
+        goto cleanup;
     }
-
-    // 3. Init GB device
-    device_t* device = init_gb_device();
     
     // 4. Verify and Load ROM
 
@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
         }   
 
         // 5b. Tick CPU
-        for (int cycles = 0; cycles < CPU_FREQUENCY; cycles++) {
+        int cycles = 0;
+        while (cycles < CPU_FREQUENCY) {
             cycles += tick_cpu(&device->cpu_state, device->memory_pool);
         }
         
@@ -55,6 +56,7 @@ int main(int argc, char** argv) {
         SDL_Delay(1000/VERT_SYNC);
     }
 
+cleanup:
     // 6. Cleanup
     free(device);
     free(config);

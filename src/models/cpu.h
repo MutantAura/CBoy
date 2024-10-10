@@ -2,7 +2,14 @@
 #define CPU_H_
 
 #include <stdint.h>
-#include "../device/constants.h"
+#include "constants.h"
+
+typedef enum flag_t {
+    ZERO,
+    SUB,
+    HALF,
+    CARRY,
+} flag_t;
 
 typedef struct control_t {
 
@@ -47,7 +54,5 @@ typedef struct cpu_t {
     uint8_t* exec_op;
     uint8_t* fetch_op;
 } cpu_t;
-
-int tick_cpu(cpu_t*, uint8_t*);
 
 #endif

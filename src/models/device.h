@@ -1,11 +1,16 @@
 #ifndef OBJECTS_H_
 #define OBJECTS_H_
 
+#include <stdint.h>
+#include "cpu.h"
+
 typedef struct {
     cpu_t cpu_state;
 
+    // Total memory all in a single allocated pool. 
     uint8_t memory_pool[0xFFFF];
 
+    // Pointers below will point to the start of specific blocks of `memory_pool`.
     uint8_t* rom_bank_0;
     uint8_t* rom_bank_1;
     uint8_t* vram;
