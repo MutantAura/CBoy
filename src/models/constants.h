@@ -32,6 +32,9 @@
 #define HRAM_START 0xFF80
 #define INTRPT_START 0xFFFF
 
+#define MEM_START ROM0_START
+#define MEM_END INTRPT_START
+
 // Audio constants
 #define AUDIO_CHANNELS 4
 #define AUDIO_OUTPUT 2
