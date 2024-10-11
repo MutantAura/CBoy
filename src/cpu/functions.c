@@ -18,6 +18,20 @@ void ld_ra16_r8(uint16_t adr, uint8_t value) {
     cycle_cost = 2;
 }
 
+void ld_r8_d8(uint8_t* reg, uint8_t value) {
+    *reg = value;
+
+    state->registers.pc += 2;
+    cycle_cost = 2;
+}
+
+void ld_r8_r8(uint8_t* reg, uint8_t value) {
+    *reg = value;
+
+    state->registers.pc++;
+    cycle_cost = 2;
+}
+
 void inc_r16(uint16_t* reg) {
     *reg++;
 
@@ -26,23 +40,22 @@ void inc_r16(uint16_t* reg) {
 }
 
 void inc_r8(uint8_t* reg) {
-    uint16_t overflow = *reg + 1;
-    overflow > UINT8_MAX ? set_flags(ZERO, 1) : set_flags(ZERO, 0);
-    overflow & MASK_LOW_4 ? set_flags(HALF, 1) : set_flags(HALF, 0);
-    set_flags(SUB, 0);
-
     *reg++;
+
+    *reg == 0 ? set_flags(ZERO, 1) : set_flags(ZERO, 0);
+    *reg & MASK_8_LOW4 == 0 ? set_flags(HALF, 1) : set_flags(HALF, 0);
+    set_flags(SUB, 0);
 
     state->registers.pc++;
     cycle_cost = 1;
 }
 
 void inc_ra16(uint16_t adr) {
-    uint16_t overflow = ram[adr] + 1;
-
-    // Handle flags/overflow
-
     ram[adr]++;
+
+    ram[adr] == 0 ? set_flags(ZERO, 1) : set_flags(ZERO, 0);
+    ram[adr] & MASK_8_LOW4 == 0 ? set_flags(HALF, 1) : set_flags(HALF, 0);
+    set_flags(SUB, 0);
 
     state->registers.pc++;
     cycle_cost = 3;
@@ -55,11 +68,26 @@ void dec_r16(uint16_t* reg) {
     cycle_cost = 2;
 }
 
-void dec_r8(uint16_t* reg) {
+void dec_r8(uint8_t* reg) {
     *reg--;
+    *reg == 0 ? set_flags(ZERO, 1) : set_flags(ZERO, 0);
+    *reg & MASK_8_LOW4 == 0b1111 ? set_flags(HALF, 1) : set_flags(HALF, 0);
+
+    set_flags(SUB, 1);
 
     state->registers.pc++;
     cycle_cost = 1;
+}
+
+void dec_ra16(uint16_t adr) {
+    ram[adr]--;
+
+    ram[adr] == 0 ? set_flags(ZERO, 1) : set_flags(ZERO, 0);
+    ram[adr] & MASK_8_LOW4 == 0b1111 ? set_flags(HALF, 1) : set_flags(HALF, 0);
+    set_flags(SUB, 1);
+
+    state->registers.pc++;
+    cycle_cost = 3;
 }
 
 void adc_A_r8(uint16_t* reg) {
@@ -70,7 +98,7 @@ void set_flags(flag_t target, uint8_t set) {
     // Zero - Set when something becomes 0, simples.
     // Carry - Set when 8 bit addition > 0xFF, 16 bit addition > 0xFFFF, subtraction < 0, when rotation shifts out a "1".
     // Sub - Is instruction a subtraction operation? Simples.
-    // Half - Set when 4 bit addition > 0xF?
+    // Half - Set when there is a carry into/out of bit 3 (xxxx Xxxx)
 
     // Extract register `f` via 8 bit cast + 8 bits.
     uint8_t* reg_f = (uint8_t*)&state->registers.af + 1;
