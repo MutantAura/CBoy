@@ -36,8 +36,8 @@ void ld_r8_r8(uint8_t* reg) {
 void ld_a16_r16(uint16_t* reg) {
     uint16_t adr = *((uint16_t*)state->exec_op);
 
-    ram[adr] = state->registers.sp & MASK16_LOW8;
-    ram[adr++] = state->registers.sp >> 8;
+    ram[adr] = state->registers.sp.reg8.low;
+    ram[adr++] = state->registers.sp.reg8.high;
 
     state->registers.pc += 3;
     cycle_cost = 5;

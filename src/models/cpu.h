@@ -11,6 +11,16 @@ typedef enum flag_t {
     CARRY,
 } flag_t;
 
+typedef struct reg16_t {
+    union {
+        struct {
+            uint8_t high;
+            uint8_t low;
+        } reg8;
+        uint16_t reg16;
+    };
+} reg16_t;
+
 typedef struct control_t {
 
 } control_t;
@@ -23,7 +33,7 @@ typedef struct transport_t {
 typedef struct registers_t {
     // 16-bit special registers
     uint16_t pc;
-    uint16_t sp;
+    reg16_t sp;
 
     // 8 bit special registers
     uint8_t ir;
@@ -32,10 +42,10 @@ typedef struct registers_t {
     // a = accumulator register
     // f = flag register
     // b-e = generic registers
-    uint16_t af;
-    uint16_t bc;
-    uint16_t de;
-    uint16_t hl;
+    reg16_t af;
+    reg16_t bc;
+    reg16_t de;
+    reg16_t hl;
 
 } registers_t;
 
