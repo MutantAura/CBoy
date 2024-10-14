@@ -3,50 +3,51 @@
 #include "../models/cpu.h"
 
 // INFO: All functions cycle_cost = their cycle cost.
+// TODO: Check if variable cost instructions are true/false coded e.g. jr_nz_s8 which path is 3/2?
 
 // LOAD INSTRUCTIONS
 void ld_r16_d16(uint16_t* reg) {
     *reg = (state->exec_op[2] << 8) | state->exec_op[1];
 
-    state->registers.pc += 3;
+    regs->pc += 3;
     cycle_cost = 3;
 }
 
 void ld_ra16_r8(uint16_t adr, uint8_t value) {
     ram[adr] = value;
 
-    state->registers.pc += 2;
+    regs->pc += 2;
     cycle_cost = 2;
 }
 
 void ld_r8_d8(uint8_t* reg) {
     *reg = state->exec_op[1];
 
-    state->registers.pc += 2;
+    regs->pc += 2;
     cycle_cost = 2;
 }
 
-void ld_r8_r8(uint8_t* reg) {
-    *reg = state->exec_op[1];
+void ld_r8_r8(uint8_t* reg, uint8_t value) {
+    *reg = value;
 
-    state->registers.pc += 2;
+    regs->pc += 2;
     cycle_cost = 2;
 }
 
 void ld_a16_r16(uint16_t* reg) {
     uint16_t adr = *((uint16_t*)state->exec_op);
 
-    ram[adr] = state->registers.sp.reg8.low;
-    ram[adr++] = state->registers.sp.reg8.high;
+    ram[adr] = regs->sp.low;
+    ram[adr++] = regs->sp.high;
 
-    state->registers.pc += 3;
+    regs->pc += 3;
     cycle_cost = 5;
 }
 
 void ld_r8_ra16(uint8_t* reg, uint16_t adr) {
     *reg = ram[adr];
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 2;
 }
 
@@ -54,7 +55,7 @@ void ld_r8_ra16(uint8_t* reg, uint16_t adr) {
 void inc_r16(uint16_t* reg) {
     *reg++;
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 2;
 }
 
@@ -65,7 +66,7 @@ void inc_r8(uint8_t* reg) {
     set_flag(HALF, *reg & MASK_8_LOW4 == 0);
     set_flag(SUB, 0);
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 1;
 }
 
@@ -76,14 +77,14 @@ void inc_ra16(uint16_t adr) {
     set_flag(HALF, ram[adr] & MASK_8_LOW4 == 0);
     set_flag(SUB, 0);
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 3;
 }
 
 void dec_r16(uint16_t* reg) {
     *reg--;
 
-    state->registers.pc += 2;
+    regs->pc += 2;
     cycle_cost = 2;
 }
 
@@ -94,7 +95,7 @@ void dec_r8(uint8_t* reg) {
     set_flag(HALF, *reg == 0xFF); // Only possible if underflow (0-1 -> 0xFF)
     set_flag(SUB, 1);
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 1;
 }
 
@@ -105,7 +106,7 @@ void dec_ra16(uint16_t adr) {
     set_flag(HALF, ram[adr] == 0xFF); // Only possible if underflow (0-1 -> 0xFF)
     set_flag(SUB, 1);
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 3;
 }
 
@@ -119,37 +120,61 @@ void add_r16_r16(uint16_t* reg, uint16_t value) {
 
     *reg += value;
 
-    state->registers.pc++;
+    regs->pc++;
     cycle_cost = 2;
 }
 
 // FLOW INSTRUCTIONS
 void jr_s8(int8_t steps) {
-    state->registers.pc += steps;
+    regs->pc += steps;
     cycle_cost = 3;
 }
 
 void jr_nz_s8(int8_t steps) {
     if (get_flag(ZERO) == 0) {
-        state->registers.pc += steps;
+        regs->pc += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    state->registers.pc += 2;
+    regs->pc += 2;
     cycle_cost = 3;
 }
 
 void jr_z_s8(int8_t steps) {
     if (get_flag(ZERO) == 1) {
-        state->registers.pc += steps;
+        regs->pc += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    state->registers.pc += 2;
+    regs->pc += 2;
+    cycle_cost = 3;
+}
+
+void jr_nc_s8(int8_t steps) {
+    if (get_flag(CARRY) == 0) {
+        regs->pc += steps;
+        cycle_cost = 2;
+
+        return;
+    }
+
+    regs->pc += 2;
+    cycle_cost = 3;
+}
+
+void jr_c_s8(int8_t steps) {
+    if (get_flag(CARRY == 1)) {
+        regs->pc += steps;
+        cycle_cost = 2;
+
+        return;
+    }
+
+    regs->pc += 2;
     cycle_cost = 3;
 }
 
@@ -160,7 +185,7 @@ void set_flag(flag_t target, uint8_t set) {
     // Half - Set when there is a carry out of bit 3 (u8 xxxx Xxxx) or bit 11 (u16 (xxxx Xxxx xxxx xxxx).
 
     // Extract register `f` via 8 bit cast + 8 bits.
-    uint8_t* reg_f = (uint8_t*)&state->registers.af + 1;
+    uint8_t* reg_f = &regs->af.low;
 
     if (set) {
         switch (target) {
@@ -180,13 +205,22 @@ void set_flag(flag_t target, uint8_t set) {
 }
 
 int get_flag(flag_t flag) {
-    uint8_t* reg_f = (uint8_t*)&state->registers.af + 1;
+    uint8_t reg_f = regs->af.low;
 
     switch (flag) {
-        case ZERO: return *reg_f >> 7;
-        case SUB: return (*reg_f & MASK6) >> 6;
-        case HALF: return (*reg_f & MASK5) >> 5;
-        case CARRY: return (*reg_f & MASK4) >> 4;
+        case ZERO: return reg_f >> 7;
+        case SUB: return (reg_f & MASK6) >> 6;
+        case HALF: return (reg_f & MASK5) >> 5;
+        case CARRY: return (reg_f & MASK4) >> 4;
         default: break;
+    }
+}
+
+void flip_flag(flag_t flag) {
+    switch (flag) {
+        case ZERO: get_flag(ZERO) ? set_flag(ZERO, 0) : set_flag(ZERO, 1); break;
+        case SUB: get_flag(SUB) ? set_flag(SUB, 0) : set_flag(SUB, 1); break;
+        case HALF: get_flag(HALF) ? set_flag(HALF, 0) : set_flag(HALF, 1); break;
+        case CARRY: get_flag(CARRY) ? set_flag(CARRY, 0) : set_flag(CARRY, 1); break;
     }
 }

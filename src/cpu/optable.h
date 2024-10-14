@@ -6,6 +6,7 @@
 
 cpu_t* state;
 uint8_t* ram;
+registers_t* regs;
 int cycle_cost;
 
 int tick_cpu(cpu_t*, uint8_t*);

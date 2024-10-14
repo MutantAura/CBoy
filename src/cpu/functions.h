@@ -21,6 +21,7 @@ void ld_ra16_r8(uint16_t, uint8_t);
 void ld_a16_r16(uint16_t*);
 void ld_r8_d8(uint8_t*);
 void ld_r8_ra16(uint8_t*, uint16_t);
+void ld_r8_r8(uint8_t*, uint8_t);
 
 void inc_r16(uint16_t*);
 void inc_r8(uint8_t*);
@@ -34,8 +35,11 @@ void add_r16_r16(uint16_t*, uint16_t);
 void jr_s8(int8_t);
 void jr_nz_s8(int8_t);
 void jr_z_s8(int8_t);
+void jr_nc_s8(int8_t);
+void jr_c_s8(int8_t);
 
 void set_flag(flag_t, uint8_t);
 int get_flag(flag_t);
+void flip_flag(flag_t);
 
 #endif

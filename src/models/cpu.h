@@ -11,14 +11,12 @@ typedef enum flag_t {
     CARRY,
 } flag_t;
 
-typedef struct reg16_t {
-    union {
-        struct {
-            uint8_t high;
-            uint8_t low;
-        } reg8;
-        uint16_t reg16;
+typedef union reg16_t {
+    struct {
+        uint8_t low;
+        uint8_t high;
     };
+    uint16_t reg16;
 } reg16_t;
 
 typedef struct control_t {
