@@ -63,7 +63,7 @@ void inc_r8(uint8_t* reg) {
     *reg++;
 
     set_flag(ZERO, *reg == 0);
-    set_flag(HALF, *reg & MASK_8_LOW4 == 0);
+    set_flag(HALF, *reg & MASK8_LOW4 == 0);
     set_flag(SUB, 0);
 
     regs->pc++;
@@ -74,7 +74,7 @@ void inc_ra16(uint16_t adr) {
     ram[adr]++;
 
     set_flag(ZERO, ram[adr] == 0);
-    set_flag(HALF, ram[adr] & MASK_8_LOW4 == 0);
+    set_flag(HALF, ram[adr] & MASK8_LOW4 == 0);
     set_flag(SUB, 0);
 
     regs->pc++;
@@ -115,10 +115,236 @@ void add_r16_r16(uint16_t* reg, uint16_t value) {
     uint32_t overflow = *reg + value;
 
     set_flag(CARRY, overflow > UINT16_MAX);
-    set_flag(HALF, (*reg & 0x0FFF) + (value & 0x0FFF) >> 12);
+    set_flag(HALF, ((*reg & MASK16_LOW12) + (value & MASK16_LOW12)) >> 12);
     set_flag(SUB, 0);
 
     *reg += value;
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void add_r8_r8(uint8_t* reg, uint8_t value) {
+    uint16_t overflow = *reg + value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += value;
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void add_r8_ra16(uint8_t* reg, uint16_t adr) {
+    uint16_t overflow = *reg + ram[adr];
+
+    set_flag(ZERO, *reg + ram[adr] == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (ram[adr] & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += ram[adr];
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void adc_r8_r8(uint8_t* reg, uint8_t value) {
+    value += get_flag(CARRY);
+    uint16_t overflow = *reg + value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += value;
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void adc_r8_ra16(uint8_t* reg, uint16_t adr) {
+    uint8_t value = ram[adr] + get_flag(CARRY);
+    uint16_t overflow = *reg + value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += value;
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void sub_r16_r16(uint16_t* reg, uint16_t value) {
+    uint32_t underflow = *reg - value;
+
+    set_flag(CARRY, underflow > UINT16_MAX);
+    set_flag(HALF, ((*reg & MASK16_LOW12) - (value & MASK16_LOW12)) >> 12);
+    set_flag(SUB, 1);
+
+    *reg -= value;
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void sub_r8_r8(uint8_t* reg, uint8_t value) {
+    uint16_t underflow = *reg - value;
+
+    set_flag(ZERO, *reg - value == 0);
+    set_flag(CARRY, underflow > UINT16_MAX);
+    set_flag(HALF, ((*reg & MASK16_LOW12) - (value & MASK16_LOW12)) >> 12);
+    set_flag(SUB, 1);
+
+    *reg -= value;
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void sub_r8_ra16(uint8_t* reg, uint16_t adr) {
+    uint16_t underflow = *reg - ram[adr];
+
+    set_flag(ZERO, *reg - ram[adr] == 0);
+    set_flag(CARRY, underflow > UINT16_MAX);
+    set_flag(HALF, ((*reg & MASK16_LOW12) - (ram[adr] & MASK16_LOW12)) >> 12);
+    set_flag(SUB, 1);
+
+    *reg -= ram[adr];
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void sbc_r8_r8(uint8_t* reg, uint8_t value) {
+    value -= get_flag(CARRY);
+    uint16_t underflow = *reg - value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, underflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg -= value;
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void sbc_r8_ra16(uint8_t* reg, uint16_t adr) {
+    uint8_t value = ram[adr] - get_flag(CARRY);
+    uint16_t underflow = *reg - value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, underflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg -= value;
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+// BITWISE INSTRUCTIONS
+void and_r8_r8(uint8_t* reg, uint8_t value) {
+    *reg &= value;
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 1);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void and_r8_ra16(uint8_t* reg, uint16_t adr) {
+    *reg &= ram[adr];
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 1);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void xor_r8_r8(uint8_t* reg, uint8_t value) {
+    *reg ^= value;
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 0);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void xor_r8_ra16(uint8_t* reg, uint16_t adr) {
+    *reg ^= ram[adr];
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 0);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void or_r8_r8(uint8_t* reg, uint8_t value) {
+    *reg |= value;
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 0);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void or_r8_r16(uint8_t* reg, uint16_t adr) {
+    *reg |= ram[adr];
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 0);
+    set_flag(CARRY, 0);
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void cmp_r8_r8(uint8_t val1, uint8_t val2) {
+    uint16_t underflow = val1 - val2;
+
+    set_flag(ZERO, underflow == 0);
+    set_flag(SUB, 1);
+    set_flag(HALF, (val1 & MASK8_LOW4) - (val2 & MASK8_LOW4) >> 4);
+    set_flag(CARRY, underflow > UINT8_MAX);
+
+    regs->pc++;
+    cycle_cost = 1;
+}
+
+void cmp_r8_ra16(uint8_t val1, uint16_t adr) {
+    uint16_t underflow = val1 - ram[adr];
+
+    set_flag(ZERO, underflow == 0);
+    set_flag(SUB, 1);
+    set_flag(HALF, (val1 & MASK8_LOW4) - (ram[adr] & MASK8_LOW4) >> 4);
+    set_flag(CARRY, underflow > UINT8_MAX);
 
     regs->pc++;
     cycle_cost = 2;
@@ -183,35 +409,29 @@ void set_flag(flag_t target, uint8_t set) {
     // Carry - Set when 8 bit addition > 0xFF, 16 bit addition > 0xFFFF, subtraction < 0, when rotation shifts out a "1".
     // Sub - Is instruction a subtraction operation? Simples.
     // Half - Set when there is a carry out of bit 3 (u8 xxxx Xxxx) or bit 11 (u16 (xxxx Xxxx xxxx xxxx).
-
-    // Extract register `f` via 8 bit cast + 8 bits.
-    uint8_t* reg_f = &regs->af.low;
-
     if (set) {
         switch (target) {
-            case ZERO: *reg_f |= (1 << 7); return;
-            case SUB: *reg_f |= (1 << 6); return;
-            case HALF: *reg_f |= (1 << 5); return;
-            case CARRY: *reg_f |= (1 << 4); return;
+            case ZERO: regs->af.low |= (1 << 7); return;
+            case SUB: regs->af.low |= (1 << 6); return;
+            case HALF: regs->af.low |= (1 << 5); return;
+            case CARRY: regs->af.low |= (1 << 4); return;
         }
     } else {
         switch (target) {
-            case ZERO: *reg_f &= ~(1 << 7); return;
-            case SUB: *reg_f &= ~(1 << 6); return;
-            case HALF: *reg_f &= ~(1 << 5); return;
-            case CARRY: *reg_f &= ~(1 << 4); return;
+            case ZERO: regs->af.low &= ~(1 << 7); return;
+            case SUB: regs->af.low &= ~(1 << 6); return;
+            case HALF: regs->af.low &= ~(1 << 5); return;
+            case CARRY: regs->af.low &= ~(1 << 4); return;
         }
     }
 }
 
 int get_flag(flag_t flag) {
-    uint8_t reg_f = regs->af.low;
-
     switch (flag) {
-        case ZERO: return reg_f >> 7;
-        case SUB: return (reg_f & MASK6) >> 6;
-        case HALF: return (reg_f & MASK5) >> 5;
-        case CARRY: return (reg_f & MASK4) >> 4;
+        case ZERO: return regs->af.low >> 7;
+        case SUB: return (regs->af.low & MASK6) >> 6;
+        case HALF: return (regs->af.low & MASK5) >> 5;
+        case CARRY: return (regs->af.low & MASK4) >> 4;
         default: break;
     }
 }

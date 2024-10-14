@@ -11,10 +11,11 @@
 #define MASK5 0b00100000
 #define MASK6 0b01000000
 #define MASK7 0b10000000
-#define MASK_8_LOW4 0b00001111
-#define MASK_8_HIGH4 0b11110000
+#define MASK8_LOW4 0b00001111
+#define MASK8_HIGH4 0b11110000
 #define MASK16_LOW8 0b0000000011111111
 #define MASK16_HIGH8 0b1111111100000000
+#define MASK16_LOW12 0b0000111111111111
 
 void ld_r16_d16(uint16_t*);
 void ld_ra16_r8(uint16_t, uint8_t);
@@ -31,6 +32,25 @@ void dec_r8(uint8_t*);
 void dec_ra16(uint16_t);
 
 void add_r16_r16(uint16_t*, uint16_t);
+void add_r8_r8(uint8_t*, uint8_t);
+void add_r8_ra16(uint8_t*, uint16_t);
+void adc_r8_r8(uint8_t*, uint8_t);
+void adc_r8_ra16(uint8_t*, uint16_t);
+
+void sub_r16_r16(uint16_t*, uint16_t);
+void sub_r8_r8(uint8_t*, uint8_t);
+void sub_r8_ra16(uint8_t*, uint16_t);
+void sbc_r8_r8(uint8_t*, uint8_t);
+void sbc_r8_ra16(uint8_t*, uint16_t);
+
+void and_r8_r8(uint8_t*, uint8_t);
+void and_r8_ra16(uint8_t*, uint16_t);
+void xor_r8_r8(uint8_t*, uint8_t);
+void xor_r8_ra16(uint8_t*, uint16_t);
+void or_r8_r8(uint8_t*, uint8_t);
+void or_r8_r16(uint8_t*, uint16_t);
+void cmp_r8_r8(uint8_t, uint8_t);
+void cmp_r8_ra16(uint8_t, uint16_t);
 
 void jr_s8(int8_t);
 void jr_nz_s8(int8_t);
