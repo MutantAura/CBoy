@@ -2,6 +2,11 @@
 #include "optable.h"
 #include "functions.h"
 
+cpu_t* state;
+uint8_t* ram;
+registers_t* regs;
+int cycle_cost;
+
 int tick_cpu(cpu_t* ctx, uint8_t* pool) {
     state = ctx;
     ram = pool;
@@ -26,14 +31,14 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x05: dec_r8(&regs->bc.high); break;
         case 0x06: ld_r8_d8(&regs->bc.high); break;
         case 0x07: unimplemented_exception(state, "RLCA", 1, 1); break; // TODO: RLCA
-        case 0x08: ld_a16_r16(&regs->sp.reg16); break;
+        case 0x08: ld_a16_sp16(); break;
         case 0x09: add_r16_r16(&regs->hl.reg16, regs->bc.reg16); break;
         case 0x0A: ld_r8_ra16(&regs->af.high, regs->bc.reg16); break;
         case 0x0B: dec_r16(&regs->bc.reg16); break;
         case 0x0C: inc_r8(&regs->bc.low); break; // Cast of &bc to uint8_t* + 1 will take &c
         case 0x0D: dec_r8(&regs->bc.low); break;
         case 0x0E: ld_r8_d8(&regs->bc.low); break;
-        case 0x0F: unimplemented_exception(state, "RRCA", 1, 1);
+        case 0x0F: unimplemented_exception(state, "RRCA", 1, 1); break;
 
         case 0x10: unimplemented_exception(state, "STOP", 1, 2); break; // TODO: STOP
         case 0x11: ld_r16_d16(&regs->de.reg16); break;
@@ -69,7 +74,7 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x2E: ld_r8_d8(&regs->hl.low); break;
         case 0x2F: unimplemented_exception(state, "CPL", 1, 1); break;
         
-        case 0x30: jr_nc_s8((int8_t)state->exec_op[1]);
+        case 0x30: jr_nc_s8((int8_t)state->exec_op[1]); break;
         case 0x31: ld_r16_d16(&regs->sp.reg16); break;
         case 0x32: ld_ra16_r8(regs->hl.reg16, regs->af.high); regs->hl.reg16--; break;
         case 0x33: inc_r16(&regs->sp.reg16); break;

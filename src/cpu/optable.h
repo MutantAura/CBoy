@@ -4,11 +4,12 @@
 #include <stdint.h>
 #include "../models/cpu.h"
 
-cpu_t* state;
-uint8_t* ram;
-registers_t* regs;
-int cycle_cost;
+extern cpu_t* state;
+extern uint8_t* ram;
+extern registers_t* regs;
+extern int cycle_cost;
 
 int tick_cpu(cpu_t*, uint8_t*);
+void unimplemented_exception(cpu_t* state, char* name, int cost, int pc);
 
 #endif
