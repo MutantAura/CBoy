@@ -432,18 +432,18 @@ void set_flag(flag_t target, int set) {
     // Half - Set when there is a carry out of bit 3 (u8 xxxx Xxxx) or bit 11 (u16 (xxxx Xxxx xxxx xxxx).
     if (set) {
         switch (target) {
-            case ZERO: regs->af.low |= (1 << 7); return;
-            case SUB: regs->af.low |= (1 << 6); return;
-            case HALF: regs->af.low |= (1 << 5); return;
-            case CARRY: regs->af.low |= (1 << 4); return;
+            case ZERO: regs->af.low |= MASK7; return;
+            case SUB: regs->af.low |= MASK6; return;
+            case HALF: regs->af.low |= MASK5; return;
+            case CARRY: regs->af.low |= MASK4; return;
             default: puts("Failed to set flag, type unknown."); break;
         }
     } else {
         switch (target) {
-            case ZERO: regs->af.low &= ~(1 << 7); return;
-            case SUB: regs->af.low &= ~(1 << 6); return;
-            case HALF: regs->af.low &= ~(1 << 5); return;
-            case CARRY: regs->af.low &= ~(1 << 4); return;
+            case ZERO: regs->af.low &= ~MASK7; return;
+            case SUB: regs->af.low &= ~MASK6; return;
+            case HALF: regs->af.low &= ~MASK5; return;
+            case CARRY: regs->af.low &= ~MASK4; return;
             default: puts("Failed to set flag, type unknown."); break;
         }
     }

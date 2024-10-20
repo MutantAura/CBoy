@@ -1,4 +1,4 @@
-CFLAGS=-std=c2x -Wall -Werror -Wextra -Wno-unused-variable -O2
+CFLAGS=-std=c2x -Wall -Werror -Wextra -O2
 
 all:
 	@if [ ! -d "build" ]; then \

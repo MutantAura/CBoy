@@ -13,7 +13,7 @@ SDL_Event queue;
 
 // Prototypes
 int init_sdl(config_t*);
-void input_helper(SDL_Event*, device_t*);
+void process_queue(SDL_Event*, device_t*);
 device_t* init_gb_device();
 
 int main(int argc, char** argv) {
@@ -35,9 +35,7 @@ int main(int argc, char** argv) {
     // 5. Enter SDL loop
     while (device->power_state == POWER_ON) {
         // 5a. Poll input
-        while (SDL_PollEvent(&queue) != 0) {
-            input_helper(&queue, device);
-        }   
+        process_queue(&queue, device);
 
         // 5b. Tick CPU
         int cycles = 0;
@@ -109,12 +107,14 @@ device_t* init_gb_device() {
     return device;
 }
 
-void input_helper(SDL_Event* event, device_t* device) {
-    switch (event->type) {
-        case SDL_QUIT: device->power_state = POWER_OFF; break;
-        case SDL_KEYDOWN:
-            switch(event->key.keysym.sym) {
-                case SDLK_ESCAPE: device->power_state = POWER_OFF; break;
-            }
+void process_queue(SDL_Event* event, device_t* device) {
+    while (SDL_PollEvent(event) != 0) {
+        switch (event->type) {
+            case SDL_QUIT: device->power_state = POWER_OFF; return;
+            case SDL_KEYDOWN:
+                switch(event->key.keysym.sym) {
+                    case SDLK_ESCAPE: device->power_state = POWER_OFF; break;
+                }
+        }
     }
 }
