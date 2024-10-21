@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
-#include "config/config_state.h"
+#include "config/user_config.h"
+#include "config/device_config.h"
 #include "cpu/optable.h"
+#include "loader/cart.h"
 #include "models/constants.h"
 #include "models/device.h"
 
@@ -14,7 +16,7 @@ SDL_Event queue;
 // Prototypes
 int init_sdl(config_t*);
 void process_queue(SDL_Event*, device_t*);
-device_t* init_gb_device();
+device_t* init_gb_device(char*);
 
 int main(int argc, char** argv) {
     
@@ -22,7 +24,7 @@ int main(int argc, char** argv) {
     config_t* config = create_config(argc, argv);
 
     // 2. Init GB device
-    device_t* device = init_gb_device();
+    device_t* device = init_gb_device(config);
 
     // 3. Init SDL
     if (init_sdl(config) == 0) {
@@ -31,6 +33,14 @@ int main(int argc, char** argv) {
     }
     
     // 4. Verify and Load ROM
+    loader_result result = load_rom(argv[1], &device->memory_pool);
+    if (result != SUCCESS) {
+        puts("ERROR: Fatal loader error.");
+        goto cleanup;
+    }
+
+    cart_header* rom_header = parse_header(device->rom_bank_0);
+    device_ctx context = create_device_context(device, rom_header);
 
     // 5. Enter SDL loop
     while (device->power_state == POWER_ON) {
@@ -58,6 +68,7 @@ cleanup:
     // 6. Cleanup
     free(device);
     free(config);
+    free(rom_header);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(main_window);
@@ -71,14 +82,6 @@ int init_sdl(config_t* config) {
         return 0;
     }
 
-    main_window = SDL_CreateWindow("CBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-                                    DISPLAY_WIDTH * config->display_scale, 
-                                    DISPLAY_HEIGHT * config->display_scale, 
-                                    0);
-    if (main_window == NULL) {
-        return 0;
-    }
-
     renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL) {
         return 0;
@@ -87,7 +90,7 @@ int init_sdl(config_t* config) {
     return 1;
 }
 
-device_t* init_gb_device() {
+device_t* init_gb_device(char* rom_path) {
     device_t* device = calloc(1, sizeof(device_t));
 
     device->rom_bank_0 = &device->memory_pool[ROM0_START];
@@ -113,7 +116,7 @@ void process_queue(SDL_Event* event, device_t* device) {
             case SDL_QUIT: device->power_state = POWER_OFF; return;
             case SDL_KEYDOWN:
                 switch(event->key.keysym.sym) {
-                    case SDLK_ESCAPE: device->power_state = POWER_OFF; break;
+                    case SDLK_ESCAPE: device->power_state = POWER_OFF; return;
                 }
         }
     }

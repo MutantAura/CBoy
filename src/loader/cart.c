@@ -28,10 +28,10 @@ loader_result load_rom(char* file_name, uint8_t* ram) {
     return SUCCESS;
 }
 
-cart_header parse_header(uint8_t* ram) {
-    cart_header new_header;
+cart_header* parse_header(uint8_t* ram) {
+    cart_header* new_header = malloc(sizeof(cart_header));
 
-    memcpy(&new_header, ram[ROM0_START], sizeof(cart_header));
+    memcpy(new_header, ram[ROM0_START], sizeof(cart_header));
 
     return new_header;
 }

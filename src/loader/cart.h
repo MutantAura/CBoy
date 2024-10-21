@@ -70,5 +70,6 @@ typedef enum loader_result {
 } loader_result;
 
 loader_result load_rom(char*, uint8_t*);
+cart_header* parse_header(uint8_t*);
 
 #endif

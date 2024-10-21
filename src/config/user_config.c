@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config_state.h"
+#include "user_config.h"
 
 config_t default_config = {
     .display_scale = 5
