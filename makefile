@@ -1,4 +1,7 @@
 CFLAGS=-std=c2x -Wall -Werror -Wextra -O2
+SOURCES=$(shell find src -type f -iname '*.c')
+TARGET=-o build/cboy
+PKGS=-lm `pkg-config --cflags --libs sdl2`
 
 all:
 	@if [ ! -d "build" ]; then \
@@ -6,7 +9,7 @@ all:
 		mkdir build ; \
 	fi
 
-	gcc src/main.c src/cpu/*.c src/gfx/*.c src/config/*.c -o build/cboy -lm $(CFLAGS) `pkg-config --cflags --libs sdl2`
+	gcc $(SOURCES) $(TARGET) $(CFLAGS) $(PKGS)
 
 release:
 	make clean

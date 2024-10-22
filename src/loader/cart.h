@@ -52,7 +52,7 @@ typedef struct cart_header {
     char new_license[2]; // Only use if old_license == 0x33
     uint8_t sgb_flag;
 
-    cart_type type;
+    uint8_t type;
     uint8_t rom_size;
     uint8_t ram_size;
     uint8_t dest_code;
@@ -64,9 +64,10 @@ typedef struct cart_header {
 } cart_header;
 
 typedef enum loader_result {
-    FAILURE,
-    SUCCESS,
-    UNKNOWN
+    OPEN_FAIL,
+    CLOSE_FAIL,
+    READ_FAIL,
+    SUCCESS
 } loader_result;
 
 loader_result load_rom(char*, uint8_t*);

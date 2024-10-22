@@ -4,7 +4,9 @@
 #include "user_config.h"
 
 config_t default_config = {
-    .display_scale = 5
+    .display_scale = 5,
+    .frequency_override = 0,
+    .variant = DMG
 };
 
 config_t* create_config(const int argc, char** args) {

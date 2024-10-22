@@ -3,9 +3,19 @@
 
 #include <stdint.h>
 #include "cpu.h"
+#include "../loader/cart.h"
+
+typedef enum device_variant {
+    DMG,
+    MGB,
+    SGB,
+    CGB 
+} device_variant;
 
 typedef struct {
     cpu_t cpu_state;
+    cart_header* cart_meta;
+    device_variant variant;
 
     // Total memory all in a single allocated pool. 
     uint8_t memory_pool[0xFFFF];

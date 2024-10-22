@@ -8,7 +8,7 @@ loader_result load_rom(char* file_name, uint8_t* ram) {
     FILE* rom = fopen(file_name, "rb");
     if (rom == NULL) {
         puts("Failed to load ROM file from specified location");
-        return FAILURE;
+        return OPEN_FAIL;
     }
 
     fseek(rom, 0L, SEEK_END);
@@ -18,7 +18,7 @@ loader_result load_rom(char* file_name, uint8_t* ram) {
     int result = fread(ram, size, 1, rom);
     if (result != 1) {
         puts("Failed to read the loaded ROM into emulated memory.");
-        return FAILURE;
+        return READ_FAIL;
     }
 
     if (fclose(rom) != 0) {
@@ -31,7 +31,7 @@ loader_result load_rom(char* file_name, uint8_t* ram) {
 cart_header* parse_header(uint8_t* ram) {
     cart_header* new_header = malloc(sizeof(cart_header));
 
-    memcpy(new_header, ram[ROM0_START], sizeof(cart_header));
+    memcpy(new_header, &ram[ROM0_START], sizeof(cart_header));
 
     return new_header;
 }

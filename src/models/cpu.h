@@ -61,6 +61,8 @@ typedef struct cpu_t {
 
     uint8_t* exec_op;
     uint8_t* fetch_op;
+
+    uint32_t frequency;
 } cpu_t;
 
 #endif
