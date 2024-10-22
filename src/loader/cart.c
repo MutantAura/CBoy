@@ -4,34 +4,37 @@
 
 #include "cart.h"
 
-loader_result load_rom(char* file_name, uint8_t* ram) {
+uint8_t* load_rom(char* file_name) {
     FILE* rom = fopen(file_name, "rb");
     if (rom == NULL) {
-        puts("Failed to load ROM file from specified location");
-        return OPEN_FAIL;
+        puts("Failed to load ROM file from specified location. Aborting...");
+        return NULL;
     }
 
     fseek(rom, 0L, SEEK_END);
     int size = ftell(rom);
     fseek(rom, 0L, SEEK_SET);
 
-    int result = fread(ram, size, 1, rom);
-    if (result != 1) {
+    uint8_t* cart_buffer = malloc(size);
+
+    int result = fread(cart_buffer, sizeof(uint8_t), size, rom);
+    if (result != size) {
         puts("Failed to read the loaded ROM into emulated memory.");
-        return READ_FAIL;
+        return NULL;
     }
 
     if (fclose(rom) != 0) {
         puts("Failed to close file handle!! Continuing...");
+        return NULL;
     }
 
-    return SUCCESS;
+    return cart_buffer;
 }
 
-cart_header* parse_header(uint8_t* ram) {
+cart_header* parse_header(uint8_t* buffer) {
     cart_header* new_header = malloc(sizeof(cart_header));
 
-    memcpy(new_header, &ram[ROM0_START], sizeof(cart_header));
+    memcpy(new_header, &buffer[CART_HEADER_START], sizeof(cart_header));
 
     return new_header;
 }

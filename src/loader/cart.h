@@ -36,8 +36,8 @@ typedef enum cart_type {
 } cart_type;
 
 typedef struct cart_header {
-    uint8_t entry_op1;
-    uint8_t entry_op2;
+    uint16_t entry_op1;
+    uint16_t entry_op2;
 
     uint8_t boot_logo[47];
 
@@ -63,14 +63,7 @@ typedef struct cart_header {
     uint16_t global_checksum;
 } cart_header;
 
-typedef enum loader_result {
-    OPEN_FAIL,
-    CLOSE_FAIL,
-    READ_FAIL,
-    SUCCESS
-} loader_result;
-
-loader_result load_rom(char*, uint8_t*);
+uint8_t* load_rom(char*);
 cart_header* parse_header(uint8_t*);
 
 #endif

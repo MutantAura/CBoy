@@ -35,6 +35,10 @@
 #define MEM_START ROM0_START
 #define MEM_END INTRPT_START
 
+// Cart constants
+#define ROM_BANK1_BANK2 0x8000
+#define CART_HEADER_START 0x100
+
 // Audio constants
 #define AUDIO_CHANNELS 4
 #define AUDIO_OUTPUT 2

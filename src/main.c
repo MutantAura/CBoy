@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     config_t* config = create_config(argc, argv);
     if (config == NULL) {
         puts("Failed to create user-configuration. Aborting...");
-        goto cleanup3;
+        goto cleanup4;
     }
 
     // 2. Init GB device
@@ -32,18 +32,20 @@ int main(int argc, char** argv) {
     // 3. Init SDL
     if (init_sdl(config) == 0) {
         puts("Failed to init SDL. Aborting...");
-        goto cleanup2;
+        goto cleanup3;
     }
     
     // 4. Verify and Load ROM
-    loader_result result = load_rom(argv[1], device->rom_bank_0);
-    if (result != SUCCESS) {
+    uint8_t* rom_buffer = load_rom(argv[1]);
+    if (rom_buffer == NULL) {
         puts("Failed to load user-provided ROM file. Aborting...");
         goto cleanup2;
     }
 
+    printf("Value at rom_buffer: %02x", *rom_buffer);
+
     // 4b. Create ROM header
-    cart_header* rom_header = parse_header(device->rom_bank_0);
+    cart_header* rom_header = parse_header(rom_buffer);
     if (rom_header == NULL) {
         puts("Failed to create ROM header. Aborting...");
         goto cleanup;
@@ -75,8 +77,10 @@ int main(int argc, char** argv) {
 cleanup:
     free(rom_header);
 cleanup2:
-    free(device);
+    free(rom_buffer);
 cleanup3:
+    free(device);
+cleanup4:
     free(config);
 
     SDL_DestroyRenderer(renderer);
