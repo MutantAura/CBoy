@@ -14,7 +14,7 @@ typedef enum device_variant {
 
 typedef struct {
     cpu_t cpu_state;
-    cart_header* cart_meta;
+    cart_t cart;
     device_variant variant;
 
     // Total memory all in a single allocated pool. 

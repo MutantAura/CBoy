@@ -14,9 +14,7 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
     
     // If an instruction was fetched last cycle, execute it this cycle and fetch the next instruction.
     // TODO: check if program counter is placed at fetch op or excecute op?
-    if (state->fetch_op != NULL) {
-        state->exec_op = state->fetch_op;
-    }
+    state->exec_op = state->fetch_op;
     state->fetch_op = &ram[regs->pc];
 
     printf("%04x %02x %02x\n", regs->pc, state->exec_op[0], state->exec_op[1]);

@@ -36,20 +36,22 @@ int main(int argc, char** argv) {
     }
     
     // 4. Verify and Load ROM
-    uint8_t* rom_buffer = load_rom(argv[1]);
-    if (rom_buffer == NULL) {
+    device->cart.buffer = load_rom(argv[1]);
+    if (device->cart.buffer == NULL) {
         puts("Failed to load user-provided ROM file. Aborting...");
         goto cleanup2;
     }
 
-    printf("Value at rom_buffer: %02x", *rom_buffer);
-
     // 4b. Create ROM header
-    cart_header* rom_header = parse_header(rom_buffer);
-    if (rom_header == NULL) {
+    device->cart.header = parse_header(device->cart.buffer);
+    if (device->cart.header == NULL) {
         puts("Failed to create ROM header. Aborting...");
         goto cleanup;
     }
+
+    // 4c. Setup initial device state based on header data.
+    // TODO: Boot-ROM and don't hardcode this value, read from header.
+    device->cpu_state.fetch_op = device->rom_bank_0 + 0x100;
 
     // 5. Enter SDL loop
     while (device->power_state == POWER_ON) {
@@ -75,9 +77,9 @@ int main(int argc, char** argv) {
 
     // 6. Cleanup
 cleanup:
-    free(rom_header);
+    free(device->cart.header);
 cleanup2:
-    free(rom_buffer);
+    free(device->cart.buffer);
 cleanup3:
     free(device);
 cleanup4:
@@ -138,10 +140,18 @@ void process_queue(SDL_Event* event, device_t* device) {
     while (SDL_PollEvent(event) != 0) {
         switch (event->type) {
             case SDL_QUIT: device->power_state = POWER_OFF; return;
+
+            case SDL_WINDOWEVENT:
+                switch (event->window.type) {
+                    case SDL_WINDOWEVENT_MAXIMIZED: SDL_MaximizeWindow(main_window); break;
+                    case SDL_WINDOWEVENT_MINIMIZED: SDL_MinimizeWindow(main_window); break;
+                    case SDL_WINDOWEVENT_CLOSE: device->power_state = POWER_OFF; break;
+                } break;
+
             case SDL_KEYDOWN:
                 switch(event->key.keysym.sym) {
                     case SDLK_ESCAPE: device->power_state = POWER_OFF; return;
-                }
+                } break;
         }
     }
 }

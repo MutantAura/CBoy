@@ -1,3 +1,4 @@
+CC=gcc
 CFLAGS=-std=c2x -Wall -Werror -Wextra -O2
 SOURCES=$(shell find src -type f -iname '*.c')
 TARGET=-o build/cboy
@@ -9,7 +10,7 @@ all:
 		mkdir build ; \
 	fi
 
-	gcc $(SOURCES) $(TARGET) $(CFLAGS) $(PKGS)
+	$(CC) $(SOURCES) $(TARGET) $(CFLAGS) $(PKGS)
 
 release:
 	make clean

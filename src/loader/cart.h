@@ -63,6 +63,11 @@ typedef struct cart_header {
     uint16_t global_checksum;
 } cart_header;
 
+typedef struct cart_t {
+    cart_header* header;
+    uint8_t* buffer;
+} cart_t;
+
 uint8_t* load_rom(char*);
 cart_header* parse_header(uint8_t*);
 
