@@ -18,7 +18,7 @@ void ld_r16_d16(uint16_t* reg) {
 void ld_ra16_r8(uint16_t adr, uint8_t value) {
     ram[adr] = value;
 
-    regs->pc += 2;
+    regs->pc++;
     cycle_cost = 2;
 }
 
@@ -147,6 +147,20 @@ void add_r8_r8(uint8_t* reg, uint8_t value) {
     cycle_cost = 1;
 }
 
+ void add_r8_d8(uint8_t* reg) {
+    uint16_t overflow = *reg + state->exec_op[1];
+
+    set_flag(ZERO, *reg + state->exec_op[1] == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (state->exec_op[1] & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += state->exec_op[1];
+
+    regs->pc += 2;
+    cycle_cost = 2;
+ }
+
 void add_r8_ra16(uint8_t* reg, uint16_t adr) {
     uint16_t overflow = *reg + ram[adr];
 
@@ -174,6 +188,21 @@ void adc_r8_r8(uint8_t* reg, uint8_t value) {
 
     regs->pc++;
     cycle_cost = 1;
+}
+
+void adc_r8_d8(uint8_t* reg) {
+    uint8_t value = state->exec_op[1] + get_flag(CARRY);
+    uint16_t overflow = *reg + value;
+
+    set_flag(ZERO, *reg + value == 0);
+    set_flag(CARRY, overflow > UINT8_MAX);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 0);
+
+    *reg += value;
+
+    regs->pc += 2;
+    cycle_cost = 2;
 }
 
 void adc_r8_ra16(uint8_t* reg, uint16_t adr) {
@@ -424,6 +453,98 @@ void jr_c_s8(int8_t steps) {
     regs->pc += 2;
     cycle_cost = 3;
 }
+
+// Stack flow/control opcodes
+void ret_nz() {
+    if (get_flag(ZERO) == 0) {
+        regs->pc = state->stack[regs->sp.reg16];
+        regs->sp.reg16--;
+
+        cycle_cost = 5;
+        
+        return;
+    }
+
+    regs->pc++;
+    cycle_cost = 2;
+}
+
+void ret_z() {
+ if (get_flag(ZERO) == 1) {
+        regs->pc = state->stack[regs->sp.reg16];
+        regs->sp.reg16--;
+
+        cycle_cost = 5;
+
+        return;
+    }
+
+    regs->pc++;
+    cycle_cost = 2;
+ }
+
+ void ret() {
+    regs->pc = state->stack[regs->sp.reg16];
+    regs->sp.reg16--;
+
+    cycle_cost = 4;
+ }
+
+ void pop_r16(uint16_t* reg) {
+    *reg = state->stack[regs->sp.reg16];
+
+    regs->sp.reg16--;
+
+    regs->pc++;
+    cycle_cost = 3;
+ }
+
+ void push_r16(uint16_t* reg) {
+    state->stack[regs->sp.reg16] = *reg;
+
+    regs->sp.reg16++;
+
+    regs->pc++;
+    cycle_cost = 4;
+ }
+
+ void call_a16() {
+    state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
+
+    regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
+
+    cycle_cost = 6;
+ }
+
+ void call_nz_a16() {
+    if (get_flag(ZERO) == 0) {
+        state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
+
+        regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
+
+        cycle_cost = 6;
+
+        return;
+    }
+
+    regs->pc += 3;
+    cycle_cost = 3;
+ }
+
+ void call_z_a16() {
+    if (get_flag(ZERO) == 1) {
+        state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
+
+        regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
+
+        cycle_cost = 6;
+
+        return;
+    }
+
+    regs->pc += 3;
+    cycle_cost = 3;
+ }
 
 void set_flag(flag_t target, int set) {
     // Zero - Set when something becomes 0, simples.

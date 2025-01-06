@@ -35,9 +35,11 @@ void dec_ra16(uint16_t);
 
 void add_r16_r16(uint16_t*, uint16_t);
 void add_r8_r8(uint8_t*, uint8_t);
+void add_r8_d8(uint8_t*);
 void add_r8_ra16(uint8_t*, uint16_t);
 void adc_r8_r8(uint8_t*, uint8_t);
 void adc_r8_ra16(uint8_t*, uint16_t);
+void adc_r8_d8(uint8_t*);
 
 void sub_r16_r16(uint16_t*, uint16_t);
 void sub_r8_r8(uint8_t*, uint8_t);
@@ -60,6 +62,15 @@ void jr_nz_s8(int8_t);
 void jr_z_s8(int8_t);
 void jr_nc_s8(int8_t);
 void jr_c_s8(int8_t);
+
+void ret();
+void ret_nz();
+void ret_z();
+void pop_r16(uint16_t*);
+void push_r16(uint16_t*);
+void call_a16();
+void call_z_a16();
+void call_nz_a16();
 
 void set_flag(flag_t, int);
 int get_flag(flag_t);

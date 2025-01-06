@@ -63,6 +63,9 @@ typedef struct cpu_t {
     uint8_t* fetch_op;
 
     uint32_t frequency;
+
+    // TODO: Look into stack size and stuff.
+    uint16_t stack[32];
 } cpu_t;
 
 #endif
