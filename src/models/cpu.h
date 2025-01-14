@@ -30,8 +30,8 @@ typedef struct transport_t {
 
 typedef struct registers_t {
     // 16-bit special registers
-    uint16_t pc;
-    reg16_t sp;
+    reg16_t pc;
+    reg16_t sp; // Boot ROM usually sets to the top of memory.
 
     // 8 bit special registers
     uint8_t ir;
@@ -44,7 +44,6 @@ typedef struct registers_t {
     reg16_t bc;
     reg16_t de;
     reg16_t hl;
-
 } registers_t;
 
 typedef struct arith_t {
@@ -63,9 +62,6 @@ typedef struct cpu_t {
     uint8_t* fetch_op;
 
     uint32_t frequency;
-
-    // TODO: Look into stack size and stuff.
-    uint16_t stack[32];
 } cpu_t;
 
 #endif

@@ -17,13 +17,13 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
     if (state->fetch_op != NULL) {
         state->exec_op = state->fetch_op;
     }
-    state->fetch_op = &ram[regs->pc];
+    state->fetch_op = &ram[regs->pc.reg16];
 
-    printf("%04x %02x %02x\n", regs->pc, state->exec_op[0], state->exec_op[1]);
+    printf("%04x %02x %02x\n", regs->pc.reg16, state->exec_op[0], state->exec_op[1]);
 
     // Opcode switch tree - best way to group common opcodes?
     switch(state->exec_op[0]) {
-        case 0x00: regs->pc++; break; // NOP
+        case 0x00: regs->pc.reg16++; break; // NOP
         case 0x01: ld_r16_d16(&regs->bc.reg16); break;
         case 0x02: ld_ra16_r8(regs->bc.reg16, regs->af.high); break;
         case 0x03: inc_r16(&regs->bc.reg16); break;
@@ -81,7 +81,7 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x34: inc_ra16(regs->hl.reg16); break;
         case 0x35: inc_ra16(regs->hl.reg16); break;
         case 0x36: ld_ra16_d8(regs->hl.reg16); break;
-        case 0x37: set_flag(CARRY, 1); set_flag(SUB, 0); set_flag(HALF, 0); regs->pc++; cycle_cost = 1; break;
+        case 0x37: set_flag(CARRY, 1); set_flag(SUB, 0); set_flag(HALF, 0); regs->pc.reg16++; cycle_cost = 1; break;
         case 0x38: jr_c_s8((int8_t)state->exec_op[1]); break;
         case 0x39: add_r16_r16(&regs->hl.reg16, regs->sp.reg16); break;
         case 0x3A: ld_r8_ra16(&regs->af.high, regs->hl.reg16); regs->hl.reg16--; break;
@@ -89,7 +89,7 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x3C: inc_r8(&regs->af.high); break;
         case 0x3D: dec_r8(&regs->af.high); break;
         case 0x3E: ld_r8_d8(&regs->af.high); break;
-        case 0x3F: set_flag(SUB, 0); set_flag(HALF, 0); flip_flag(CARRY); regs->pc++; cycle_cost = 1; break;
+        case 0x3F: set_flag(SUB, 0); set_flag(HALF, 0); flip_flag(CARRY); regs->pc.reg16++; cycle_cost = 1; break;
 
         case 0x40: ld_r8_r8(&regs->bc.high, regs->bc.high); break;
         case 0x41: ld_r8_r8(&regs->bc.high, regs->bc.low); break;
@@ -231,22 +231,23 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0xBE: cmp_r8_ra16(regs->af.high, regs->hl.reg16); break;
         case 0xBF: cmp_r8_r8(regs->af.high, regs->af.high); break;
 
+        // Stack flow + misc arithmetic.
         case 0xC0: ret_nz(); break;
-        case 0xC1: pop_r16(&regs->bc.reg16); break;
-        case 0xC2: unimplemented_exception(state, "JP NZ (A16)", 4, 3); break;
-        case 0xC3: unimplemented_exception(state, "JP (A16)", 6, 3); break;
-        case 0xC4: call_nz_a16(); break;
-        case 0xC5: push_r16(&regs->bc.reg16); break;
+        case 0xC1: pop_r16(&regs->bc); break;
+        case 0xC2: jmp_nz(); break;
+        case 0xC3: jmp(); break;
+        case 0xC4: call_nz_a16(); break; // Not done!!
+        case 0xC5: push_r16(&regs->bc); break;
         case 0xC6: add_r8_d8(&regs->af.high); break;
-        case 0xC7: unimplemented_exception(state, "RST 0", 4, 1); break;
+        case 0xC7: rst(0);
         case 0xC8: ret_z(); break;
         case 0xC9: ret(); break;
-        case 0xCA: unimplemented_exception(state, "JP Z (A16)", 4, 3); break;
+        case 0xCA: jmp_z(); break;
         // case 0xCB: 16-bit opcodes, implemented in alternate tree below.
-        case 0xCC: call_z_a16(); break;
-        case 0xCD: call_a16(); break;
+        case 0xCC: call_z_a16(); break; // Not done!!
+        case 0xCD: call_a16(); break; // Not done!!
         case 0xCE: adc_r8_d8(&regs->af.high); break;
-        case 0xCF: unimplemented_exception(state, "RST 1", 4, 1); break;
+        case 0xCF: rst(1);
         
         case 0xCB: // Secondary switch table for 16-bit instructions.
             switch (state->exec_op[1]) {
@@ -264,5 +265,5 @@ void unimplemented_exception(cpu_t* state, char* name, int cost, int pc) {
     printf("Unimplemented instruction hit: %s \"%02X\"\n", name, state->exec_op[0]);
 
     cycle_cost = cost;
-    regs->pc += pc;
+    regs->pc.reg16 += pc;
 }

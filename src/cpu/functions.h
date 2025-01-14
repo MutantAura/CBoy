@@ -62,12 +62,15 @@ void jr_nz_s8(int8_t);
 void jr_z_s8(int8_t);
 void jr_nc_s8(int8_t);
 void jr_c_s8(int8_t);
+void jmp();
+void jmp_z();
+void jmp_nz();
 
 void ret();
 void ret_nz();
 void ret_z();
-void pop_r16(uint16_t*);
-void push_r16(uint16_t*);
+void pop_r16(reg16_t*);
+void push_r16(reg16_t*);
 void call_a16();
 void call_z_a16();
 void call_nz_a16();

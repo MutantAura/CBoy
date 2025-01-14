@@ -11,28 +11,28 @@
 void ld_r16_d16(uint16_t* reg) {
     *reg = (state->exec_op[2] << 8) | state->exec_op[1];
 
-    regs->pc += 3;
+    regs->pc.reg16 += 3;
     cycle_cost = 3;
 }
 
 void ld_ra16_r8(uint16_t adr, uint8_t value) {
     ram[adr] = value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
 void ld_r8_d8(uint8_t* reg) {
     *reg = state->exec_op[1];
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
 void ld_r8_r8(uint8_t* reg, uint8_t value) {
     *reg = value;
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -42,21 +42,21 @@ void ld_a16_sp16() {
     ram[adr] = regs->sp.low;
     ram[adr++] = regs->sp.high;
 
-    regs->pc += 3;
+    regs->pc.reg16 += 3;
     cycle_cost = 5;
 }
 
 void ld_r8_ra16(uint8_t* reg, uint16_t adr) {
     *reg = ram[adr];
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
 void ld_ra16_d8(uint16_t adr) {
     ram[adr] = state->exec_op[1];
 
-    regs->pc += 3;
+    regs->pc.reg16 += 3;
     cycle_cost = 2;
 }
 
@@ -64,7 +64,7 @@ void ld_ra16_d8(uint16_t adr) {
 void inc_r16(uint16_t* reg) {
     (*reg)++;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -75,7 +75,7 @@ void inc_r8(uint8_t* reg) {
     set_flag(HALF, (*reg & MASK8_LOW4) == 0);
     set_flag(SUB, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -86,14 +86,14 @@ void inc_ra16(uint16_t adr) {
     set_flag(HALF, (ram[adr] & MASK8_LOW4) == 0);
     set_flag(SUB, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 3;
 }
 
 void dec_r16(uint16_t* reg) {
     (*reg)--;
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -104,7 +104,7 @@ void dec_r8(uint8_t* reg) {
     set_flag(HALF, *reg == 0xFF); // Only possible if underflow (0-1 -> 0xFF)
     set_flag(SUB, 1);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -115,7 +115,7 @@ void dec_ra16(uint16_t adr) {
     set_flag(HALF, ram[adr] == 0xFF); // Only possible if underflow (0-1 -> 0xFF)
     set_flag(SUB, 1);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 3;
 }
 
@@ -129,7 +129,7 @@ void add_r16_r16(uint16_t* reg, uint16_t value) {
 
     *reg += value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -143,7 +143,7 @@ void add_r8_r8(uint8_t* reg, uint8_t value) {
 
     *reg += value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -157,7 +157,7 @@ void add_r8_r8(uint8_t* reg, uint8_t value) {
 
     *reg += state->exec_op[1];
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
  }
 
@@ -171,7 +171,7 @@ void add_r8_ra16(uint8_t* reg, uint16_t adr) {
 
     *reg += ram[adr];
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -186,7 +186,7 @@ void adc_r8_r8(uint8_t* reg, uint8_t value) {
 
     *reg += value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -201,7 +201,7 @@ void adc_r8_d8(uint8_t* reg) {
 
     *reg += value;
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -216,7 +216,7 @@ void adc_r8_ra16(uint8_t* reg, uint16_t adr) {
 
     *reg += value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -229,7 +229,7 @@ void sub_r16_r16(uint16_t* reg, uint16_t value) {
 
     *reg -= value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -243,7 +243,7 @@ void sub_r8_r8(uint8_t* reg, uint8_t value) {
 
     *reg -= value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -257,7 +257,7 @@ void sub_r8_ra16(uint8_t* reg, uint16_t adr) {
 
     *reg -= ram[adr];
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -272,7 +272,7 @@ void sbc_r8_r8(uint8_t* reg, uint8_t value) {
 
     *reg -= value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -287,7 +287,7 @@ void sbc_r8_ra16(uint8_t* reg, uint16_t adr) {
 
     *reg -= value;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -300,7 +300,7 @@ void and_r8_r8(uint8_t* reg, uint8_t value) {
     set_flag(HALF, 1);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -312,7 +312,7 @@ void and_r8_ra16(uint8_t* reg, uint16_t adr) {
     set_flag(HALF, 1);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -324,7 +324,7 @@ void xor_r8_r8(uint8_t* reg, uint8_t value) {
     set_flag(HALF, 0);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -336,7 +336,7 @@ void xor_r8_ra16(uint8_t* reg, uint16_t adr) {
     set_flag(HALF, 0);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -348,7 +348,7 @@ void or_r8_r8(uint8_t* reg, uint8_t value) {
     set_flag(HALF, 0);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -360,7 +360,7 @@ void or_r8_r16(uint8_t* reg, uint16_t adr) {
     set_flag(HALF, 0);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -372,7 +372,7 @@ void or_r8_ra16(uint8_t* reg, uint16_t adr) {
     set_flag(HALF, 0);
     set_flag(CARRY, 0);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
@@ -384,7 +384,7 @@ void cmp_r8_r8(uint8_t val1, uint8_t val2) {
     set_flag(HALF, ((val1 & MASK8_LOW4) - (val2 & MASK8_LOW4)) >> 4);
     set_flag(CARRY, underflow > UINT8_MAX);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 1;
 }
 
@@ -396,154 +396,206 @@ void cmp_r8_ra16(uint8_t val1, uint16_t adr) {
     set_flag(HALF, ((val1 & MASK8_LOW4) - (ram[adr] & MASK8_LOW4)) >> 4);
     set_flag(CARRY, underflow > UINT8_MAX);
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
 // FLOW INSTRUCTIONS
 void jr_s8(int8_t steps) {
-    regs->pc += steps;
+    regs->pc.reg16 += steps;
     cycle_cost = 3;
 }
 
 void jr_nz_s8(int8_t steps) {
     if (get_flag(ZERO) == 0) {
-        regs->pc += steps;
+        regs->pc.reg16 += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 3;
 }
 
 void jr_z_s8(int8_t steps) {
     if (get_flag(ZERO) == 1) {
-        regs->pc += steps;
+        regs->pc.reg16 += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 3;
 }
 
 void jr_nc_s8(int8_t steps) {
     if (get_flag(CARRY) == 0) {
-        regs->pc += steps;
+        regs->pc.reg16 += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 3;
 }
 
 void jr_c_s8(int8_t steps) {
     if (get_flag(CARRY == 1)) {
-        regs->pc += steps;
+        regs->pc.reg16 += steps;
         cycle_cost = 2;
 
         return;
     }
 
-    regs->pc += 2;
+    regs->pc.reg16 += 2;
     cycle_cost = 3;
 }
 
-// Stack flow/control opcodes
+void jmp() {
+    uint16_t adr = regs->pc.reg16;
+    regs->pc.high = ram[adr + 1];
+    regs->pc.low = ram[adr + 2];
+
+    cycle_cost = 4;
+}
+
+void jmp_nz() {
+    if (get_flag(ZERO) == 1) {
+        uint16_t adr = regs->pc.reg16;
+        regs->pc.high = ram[adr + 1];
+        regs->pc.low = ram[adr + 2];
+
+        cycle_cost = 4;
+
+        return;
+    }
+
+    cycle_cost = 3;
+}
+
+void jmp_z() {
+    if (get_flag(ZERO) == 0) {
+        uint16_t adr = regs->pc.reg16;
+        regs->pc.high = ram[adr + 1];
+        regs->pc.low = ram[adr + 2];
+
+        cycle_cost = 4;
+
+        return;
+    }
+
+    cycle_cost = 3;
+}
+
+// Stack flow/control opc.reg16odes
 void ret_nz() {
     if (get_flag(ZERO) == 0) {
-        regs->pc = state->stack[regs->sp.reg16];
-        regs->sp.reg16--;
+        regs->pc.low = ram[regs->sp.reg16];
+        regs->pc.high = ram[regs->sp.reg16 + 1];
+
+        regs->sp.reg16 += 2;
 
         cycle_cost = 5;
         
         return;
     }
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
 }
 
 void ret_z() {
  if (get_flag(ZERO) == 1) {
-        regs->pc = state->stack[regs->sp.reg16];
-        regs->sp.reg16--;
+        regs->pc.low = ram[regs->sp.reg16];
+        regs->pc.high = ram[regs->sp.reg16 + 1];
+
+        regs->sp.reg16 += 2;
 
         cycle_cost = 5;
 
         return;
     }
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 2;
  }
 
  void ret() {
-    regs->pc = state->stack[regs->sp.reg16];
-    regs->sp.reg16--;
+    regs->pc.low = ram[regs->sp.reg16];
+    regs->pc.high = ram[regs->sp.reg16 + 1];
+
+    regs->sp.reg16 += 2;
 
     cycle_cost = 4;
  }
 
- void pop_r16(uint16_t* reg) {
-    *reg = state->stack[regs->sp.reg16];
+ void pop_r16(reg16_t* reg) {
+    reg->low = ram[regs->sp.reg16];
+    reg->high = ram[regs->sp.reg16 + 1];
 
-    regs->sp.reg16--;
+    regs->sp.reg16 += 2;
 
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 3;
  }
 
- void push_r16(uint16_t* reg) {
-    state->stack[regs->sp.reg16] = *reg;
+ void push_r16(reg16_t* reg) {
+    ram[regs->sp.reg16 - 1] = reg->high;
+    ram[regs->sp.reg16 - 2] = reg->low;
+    regs->sp.reg16 -= 2;
 
-    regs->sp.reg16++;
-
-    regs->pc++;
+    regs->pc.reg16++;
     cycle_cost = 4;
  }
 
  void call_a16() {
-    state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
-
-    regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
-
+    // TODO: Figure this out!
     cycle_cost = 6;
  }
 
  void call_nz_a16() {
     if (get_flag(ZERO) == 0) {
-        state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
+        ram[regs->sp.reg16] = regs->pc.reg16;
+        regs->sp.reg16 -= 2;
 
-        regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
+        // TODO: Figure this out?
 
         cycle_cost = 6;
 
         return;
     }
 
-    regs->pc += 3;
+    regs->pc.reg16 += 3;
     cycle_cost = 3;
  }
 
  void call_z_a16() {
     if (get_flag(ZERO) == 1) {
-        state->stack[regs->sp.reg16] = regs->pc + 3; // TODO: Check how these work, does pc need to increment??
+        ram[regs->sp.reg16] = regs->pc.reg16 + 3; // TODO: Check how these work, does pc.reg16 need to increment??
 
-        regs->pc = (state->exec_op[2] << 8) | state->exec_op[1];
+        regs->pc.reg16 = (state->exec_op[2] << 8) | state->exec_op[1];
 
         cycle_cost = 6;
 
         return;
     }
 
-    regs->pc += 3;
+    regs->pc.reg16 += 3;
     cycle_cost = 3;
+ }
+
+ void rst(int type) {
+    push_r16(&regs->pc);
+
+    regs->pc.high = 0x00;
+    regs->pc.low = type;
+
+    regs->pc.reg16 = ram[0];
+
+    cycle_cost = 4;
  }
 
 void set_flag(flag_t target, int set) {
