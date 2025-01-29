@@ -10,6 +10,6 @@ extern registers_t* regs;
 extern int cycle_cost;
 
 int tick_cpu(cpu_t*, uint8_t*);
-void unimplemented_exception(cpu_t* state, char* name, int cost, int pc);
+void unimplemented_exception(char* name, int cost, int pc);
 
 #endif

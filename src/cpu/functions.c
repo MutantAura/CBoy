@@ -552,20 +552,25 @@ void ret_z() {
  }
 
  void call_a16() {
-    // TODO: Figure this out!
+    ram[regs->sp.reg16 - 1] = regs->pc.reg16 + 3;
+    regs->sp.reg16--;
+
+    regs->pc.high = state->exec_op[2];
+    regs->pc.low = state->exec_op[1];
+
     cycle_cost = 6;
  }
 
  void call_nz_a16() {
     if (get_flag(ZERO) == 0) {
-        ram[regs->sp.reg16] = regs->pc.reg16;
-        regs->sp.reg16 -= 2;
+        // CALL instruction is 3 bytes long. Push next instruction to the stack.
+        ram[regs->sp.reg16 - 1] = regs->pc.reg16 + 3;
+        regs->sp.reg16--;
 
-        // TODO: Figure this out?
+        regs->pc.high = state->exec_op[2];
+        regs->pc.low = state->exec_op[1];
 
         cycle_cost = 6;
-
-        return;
     }
 
     regs->pc.reg16 += 3;
@@ -574,13 +579,14 @@ void ret_z() {
 
  void call_z_a16() {
     if (get_flag(ZERO) == 1) {
-        ram[regs->sp.reg16] = regs->pc.reg16 + 3; // TODO: Check how these work, does pc.reg16 need to increment??
+        // CALL instruction is 3 bytes long. Push next instruction to the stack.
+        ram[regs->sp.reg16 - 1] = regs->pc.reg16 + 3;
+        regs->sp.reg16--;
 
-        regs->pc.reg16 = (state->exec_op[2] << 8) | state->exec_op[1];
+        regs->pc.high = state->exec_op[2];
+        regs->pc.low = state->exec_op[1];
 
         cycle_cost = 6;
-
-        return;
     }
 
     regs->pc.reg16 += 3;
@@ -592,8 +598,6 @@ void ret_z() {
 
     regs->pc.high = 0x00;
     regs->pc.low = type;
-
-    regs->pc.reg16 = ram[0];
 
     cycle_cost = 4;
  }

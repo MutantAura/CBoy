@@ -61,7 +61,15 @@ int main(int argc, char** argv) {
         // 5b. Tick CPU
         int cycles = 0;
         while (cycles < CPU_FREQUENCY) {
-            cycles += tick_cpu(&device->cpu_state, device->memory_pool);
+            int cost = tick_cpu(&device->cpu_state, device->memory_pool);
+
+            // An unimplemented instruction will return a cycle cost of -1, in this event, die.
+            if (cost == -1) {
+                device->power_state = POWER_OFF;
+                break;
+            }
+
+            cycles += cost;
         }
         
         // 5c. Render

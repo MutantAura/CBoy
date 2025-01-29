@@ -75,6 +75,8 @@ void call_a16();
 void call_z_a16();
 void call_nz_a16();
 
+void rst(int);
+
 void set_flag(flag_t, int);
 int get_flag(flag_t);
 void flip_flag(flag_t);
