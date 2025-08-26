@@ -236,9 +236,9 @@ void sub_r16_r16(uint16_t* reg, uint16_t value) {
 void sub_r8_r8(uint8_t* reg, uint8_t value) {
     uint8_t underflow = *reg - value;
 
-    set_flag(ZERO, *reg - value == 0);
+    set_flag(ZERO, underflow == 0);
     set_flag(CARRY, underflow > *reg);
-    set_flag(HALF, ((*reg & MASK16_LOW12) - (value & MASK16_LOW12)) >> 12);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
     set_flag(SUB, 1);
 
     *reg -= value;
@@ -250,14 +250,28 @@ void sub_r8_r8(uint8_t* reg, uint8_t value) {
 void sub_r8_ra16(uint8_t* reg, uint16_t adr) {
     uint8_t underflow = *reg - ram[adr];
 
-    set_flag(ZERO, *reg - ram[adr] == 0);
+    set_flag(ZERO, underflow == 0);
     set_flag(CARRY, underflow > *reg);
-    set_flag(HALF, ((*reg & MASK16_LOW12) - (ram[adr] & MASK16_LOW12)) >> 12);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (ram[adr] & MASK8_LOW4)) >> 4);
     set_flag(SUB, 1);
 
     *reg -= ram[adr];
 
     regs->pc.reg16++;
+    cycle_cost = 2;
+}
+
+void sub_r8_d8(uint8_t* reg) {
+    uint8_t underflow = *reg - state->exec_op[1];
+
+    set_flag(ZERO, underflow == 0);
+    set_flag(CARRY, underflow > *reg);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (state->exec_op[1] & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 1);
+
+    *reg -= state->exec_op[1];
+
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -268,7 +282,7 @@ void sbc_r8_r8(uint8_t* reg, uint8_t value) {
     set_flag(ZERO, *reg + value == 0);
     set_flag(CARRY, underflow > *reg);
     set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
-    set_flag(SUB, 0);
+    set_flag(SUB, 1);
 
     *reg -= value;
 
@@ -280,14 +294,29 @@ void sbc_r8_ra16(uint8_t* reg, uint16_t adr) {
     uint8_t value = ram[adr] - get_flag(CARRY);
     uint8_t underflow = *reg - value;
 
-    set_flag(ZERO, *reg + value == 0);
+    set_flag(ZERO, underflow == 0);
     set_flag(CARRY, underflow > *reg);
     set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
-    set_flag(SUB, 0);
+    set_flag(SUB, 1);
 
     *reg -= value;
 
     regs->pc.reg16++;
+    cycle_cost = 2;
+}
+
+void sbc_r8_d8(uint8_t* reg) {
+    uint8_t value = state->exec_op[1] - get_flag(CARRY);
+    uint8_t underflow = *reg - value;
+
+    set_flag(ZERO, underflow == 0);
+    set_flag(CARRY, underflow > *reg);
+    set_flag(HALF, ((*reg & MASK8_LOW4) - (value & MASK8_LOW4)) >> 4);
+    set_flag(SUB, 1);
+
+    *reg -= value;
+
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -462,8 +491,8 @@ void jmp() {
     cycle_cost = 4;
 }
 
-void jmp_nz() {
-    if (get_flag(ZERO) == 1) {
+void jmp_nf(flag_t flag) {
+    if (get_flag(flag) == 1) {
         uint16_t adr = regs->pc.reg16;
         regs->pc.high = ram[adr + 1];
         regs->pc.low = ram[adr + 2];
@@ -476,8 +505,8 @@ void jmp_nz() {
     cycle_cost = 3;
 }
 
-void jmp_z() {
-    if (get_flag(ZERO) == 0) {
+void jmp_f(flag_t flag) {
+    if (get_flag(flag) == 0) {
         uint16_t adr = regs->pc.reg16;
         regs->pc.high = ram[adr + 1];
         regs->pc.low = ram[adr + 2];
@@ -491,8 +520,8 @@ void jmp_z() {
 }
 
 // Stack flow/control opc.reg16odes
-void ret_nz() {
-    if (get_flag(ZERO) == 0) {
+void ret_nf(flag_t flag) {
+    if (get_flag(flag) == 0) {
         regs->pc.low = ram[regs->sp.reg16];
         regs->pc.high = ram[regs->sp.reg16 + 1];
 
@@ -507,8 +536,8 @@ void ret_nz() {
     cycle_cost = 2;
 }
 
-void ret_z() {
- if (get_flag(ZERO) == 1) {
+void ret_f(flag_t flag) {
+ if (get_flag(flag) == 1) {
         regs->pc.low = ram[regs->sp.reg16];
         regs->pc.high = ram[regs->sp.reg16 + 1];
 
@@ -561,8 +590,8 @@ void ret_z() {
     cycle_cost = 6;
  }
 
- void call_nz_a16() {
-    if (get_flag(ZERO) == 0) {
+ void call_nf_a16(flag_t flag) {
+    if (get_flag(flag) == 0) {
         // CALL instruction is 3 bytes long. Push next instruction to the stack.
         ram[regs->sp.reg16 - 1] = regs->pc.reg16 + 3;
         regs->sp.reg16--;
@@ -577,8 +606,8 @@ void ret_z() {
     cycle_cost = 3;
  }
 
- void call_z_a16() {
-    if (get_flag(ZERO) == 1) {
+ void call_f_a16(flag_t flag) {
+    if (get_flag(flag) == 1) {
         // CALL instruction is 3 bytes long. Push next instruction to the stack.
         ram[regs->sp.reg16 - 1] = regs->pc.reg16 + 3;
         regs->sp.reg16--;

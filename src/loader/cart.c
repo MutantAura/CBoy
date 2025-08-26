@@ -33,6 +33,10 @@ uint8_t* load_rom(char* file_name) {
 
 cart_header* parse_header(uint8_t* buffer) {
     cart_header* new_header = malloc(sizeof(cart_header));
+    if (new_header == NULL) {
+        puts("Failed to allocate ROM header.");
+        return NULL;
+    }
 
     memcpy(new_header, &buffer[CART_HEADER_START], sizeof(cart_header));
 

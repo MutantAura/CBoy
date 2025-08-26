@@ -44,8 +44,10 @@ void adc_r8_d8(uint8_t*);
 void sub_r16_r16(uint16_t*, uint16_t);
 void sub_r8_r8(uint8_t*, uint8_t);
 void sub_r8_ra16(uint8_t*, uint16_t);
+void sub_r8_d8(uint8_t*);
 void sbc_r8_r8(uint8_t*, uint8_t);
 void sbc_r8_ra16(uint8_t*, uint16_t);
+void sbc_r8_d8(uint8_t*);
 
 void and_r8_r8(uint8_t*, uint8_t);
 void and_r8_ra16(uint8_t*, uint16_t);
@@ -63,17 +65,17 @@ void jr_z_s8(int8_t);
 void jr_nc_s8(int8_t);
 void jr_c_s8(int8_t);
 void jmp();
-void jmp_z();
-void jmp_nz();
+void jmp_f(flag_t);
+void jmp_nf(flag_t);
 
 void ret();
-void ret_nz();
-void ret_z();
+void ret_nf(flag_t);
+void ret_f(flag_t);
 void pop_r16(reg16_t*);
 void push_r16(reg16_t*);
 void call_a16();
-void call_z_a16();
-void call_nz_a16();
+void call_f_a16(flag_t);
+void call_nf_a16(flag_t);
 
 void rst(int);
 

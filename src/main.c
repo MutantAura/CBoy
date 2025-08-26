@@ -38,14 +38,12 @@ int main(int argc, char** argv) {
     // 4. Verify and Load ROM
     device->cart.buffer = load_rom(argv[1]);
     if (device->cart.buffer == NULL) {
-        puts("Failed to load user-provided ROM file. Aborting...");
         goto cleanup2;
     }
 
     // 4b. Create ROM header
     device->cart.header = parse_header(device->cart.buffer);
     if (device->cart.header == NULL) {
-        puts("Failed to create ROM header. Aborting...");
         goto cleanup;
     }
 
@@ -58,12 +56,11 @@ int main(int argc, char** argv) {
         // 5a. Poll input
         process_queue(&queue, device);
 
-        // 5b. Tick CPU
+        // 5b. Tick CPU, uncomment when ready?
         int cycles = 0;
         while (cycles < CPU_FREQUENCY) {
-            int cost = tick_cpu(&device->cpu_state, device->memory_pool);
-
             // An unimplemented instruction will return a cycle cost of -1, in this event, die.
+            int cost = tick_cpu(&device->cpu_state, device->memory_pool);
             if (cost == -1) {
                 device->power_state = POWER_OFF;
                 break;

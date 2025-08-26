@@ -232,38 +232,38 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0xBF: cmp_r8_r8(regs->af.high, regs->af.high); break;
 
         // Stack flow + misc arithmetic.
-        case 0xC0: ret_nz(); break;
+        case 0xC0: ret_nf(ZERO); break;
         case 0xC1: pop_r16(&regs->bc); break;
-        case 0xC2: jmp_nz(); break;
+        case 0xC2: jmp_nf(ZERO); break;
         case 0xC3: jmp(); break;
-        case 0xC4: call_nz_a16(); break; // TODO: I trust literally none of my call implementations!
+        case 0xC4: call_nf_a16(ZERO); break; // TODO: I trust literally none of my call implementations!
         case 0xC5: push_r16(&regs->bc); break;
         case 0xC6: add_r8_d8(&regs->af.high); break;
         case 0xC7: rst(0); break;
-        case 0xC8: ret_z(); break;
+        case 0xC8: ret_f(ZERO); break;
         case 0xC9: ret(); break;
-        case 0xCA: jmp_z(); break;
+        case 0xCA: jmp_f(ZERO); break;
         // case 0xCB: 16-bit opcodes, implemented in alternate tree below.
-        case 0xCC: call_z_a16(); break; // TODO: I trust literally none of my call implementations!
+        case 0xCC: call_f_a16(ZERO); break; // TODO: I trust literally none of my call implementations!
         case 0xCD: call_a16(); break; // TODO: I trust literally none of my call implementations!
         case 0xCE: adc_r8_d8(&regs->af.high); break;
         case 0xCF: rst(1); break;
 
-        case 0xD0: unimplemented_exception("RET NC", 5, 1); break;
-        case 0xD1: unimplemented_exception("POP DE", 3, 1); break;
-        case 0xD2: unimplemented_exception("JP NC, a16", 4, 3); break;
+        case 0xD0: ret_nf(CARRY); break;
+        case 0xD1: pop_r16(&regs->de); break;
+        case 0xD2: jmp_nf(CARRY); break;
         case 0xD3: unimplemented_exception("INVALID", 0, 0); break;
-        case 0xD4: unimplemented_exception("CALL NC", 6, 3); break;
-        case 0xD5: unimplemented_exception("PUSH DE", 4, 1); break;
-        case 0xD6: unimplemented_exception("SUB d8", 2, 2); break;
+        case 0xD4: call_nf_a16(CARRY); break;
+        case 0xD5: push_r16(&regs->de);
+        case 0xD6: sub_r8_d8(&regs->af.high);
         case 0xD7: rst(2); break;
-        case 0xD8: unimplemented_exception("RET C", 5, 1); break;
+        case 0xD8: ret_f(CARRY); break;
         case 0xD9: unimplemented_exception("RETI", 4, 1); break;
-        case 0xDA: unimplemented_exception("JP C, a16", 4, 3); break;
+        case 0xDA: jmp_f(CARRY); break;
         case 0xDB: unimplemented_exception("INVALID", 0, 0); break;
-        case 0xDC: unimplemented_exception("CALL C, a16", 6, 3); break;
+        case 0xDC: call_f_a16(CARRY); break;
         case 0xDD: unimplemented_exception("INVALID", 0, 0); break;
-        case 0xDE: unimplemented_exception("SBC A, d8", 2, 2); break;
+        case 0xDE: sbc_r8_d8(&regs->af.high); break;
         case 0xDF: rst(3); break;
         
         case 0xCB: // Secondary switch table for 16-bit instructions.
@@ -280,9 +280,9 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
 
 void unimplemented_exception(char* name, int cost, int pc) {
     printf("Unimplemented instruction hit: %s\n", name);
-    printf("Opcode: \"%02X\"", state->exec_op[0]);
+    printf("Opcode: \"%02X\"\n", state->exec_op[0]);
     printf("Cost: %i\n", cost);
-    printf("PC delta: %i", pc);
+    printf("PC delta: %i\n", pc);
 
     cycle_cost = -1;
 }
