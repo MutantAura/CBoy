@@ -175,6 +175,18 @@ void add_r8_ra16(uint8_t* reg, uint16_t adr) {
     cycle_cost = 2;
 }
 
+void add_r16_s8(uint16_t* reg) {
+    uint16_t value = *reg + state->exec_op[1];
+
+    set_flag(ZERO, 0);
+    set_flag(CARRY, 0);
+    set_flag(HALF, ((*reg & MASK8_LOW4) + (state->exec_op[1] & MASK8_LOW4) >> 4));
+    set_flag(SUB, state->exec_op < 0);
+
+    *reg += state->exec_op[1];
+
+}
+
 void adc_r8_r8(uint8_t* reg, uint8_t value) {
     value += get_flag(CARRY);
     uint16_t overflow = *reg + value;
@@ -343,6 +355,17 @@ void and_r8_ra16(uint8_t* reg, uint16_t adr) {
 
     regs->pc.reg16++;
     cycle_cost = 2;
+}
+
+void and_d8(uint8_t* reg) {
+    *reg &= state->exec_op[1];
+
+    set_flag(ZERO, *reg == 0);
+    set_flag(SUB, 0);
+    set_flag(HALF, 1);
+    set_flag(CARRY, 0);
+
+    regs->pc.reg16 += 2;
 }
 
 void xor_r8_r8(uint8_t* reg, uint8_t value) {
@@ -622,7 +645,7 @@ void ret_f(flag_t flag) {
     cycle_cost = 3;
  }
 
- void rst(int type) {
+ void rst(uint8_t type) {
     push_r16(&regs->pc);
 
     regs->pc.high = 0x00;

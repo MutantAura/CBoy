@@ -51,6 +51,7 @@ void sbc_r8_d8(uint8_t*);
 
 void and_r8_r8(uint8_t*, uint8_t);
 void and_r8_ra16(uint8_t*, uint16_t);
+void and_d8(uint8_t*);
 void xor_r8_r8(uint8_t*, uint8_t);
 void xor_r8_ra16(uint8_t*, uint16_t);
 void or_r8_r8(uint8_t*, uint8_t);

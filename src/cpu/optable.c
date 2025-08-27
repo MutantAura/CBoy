@@ -265,6 +265,40 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0xDD: unimplemented_exception("INVALID", 0, 0); break;
         case 0xDE: sbc_r8_d8(&regs->af.high); break;
         case 0xDF: rst(3); break;
+
+        case 0xE0: unimplemented_exception("LD (a8), A", 3, 2); break;
+        case 0xE1: pop_r16(&regs->hl); break;
+        case 0xE2: unimplemented_exception("LD (C), A", 3, 1); break;
+        case 0xE3: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xE4: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xE5: push_r16(&regs->hl); break;
+        case 0xE6: and_d8(&regs->af.high); break;
+        case 0xE7: rst(4); break;
+        case 0xE8: add_r16_s8(&regs->sp.reg16); break;
+        case 0xE9: jmp_r16(regs->hl); break; // TODO
+        case 0xEA: ld_a16_r8(regs->af.high); break; // TODO
+        case 0xEB: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xEC: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xED: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xEE: xor_d8_r8(&regs->af.high); break; // TODO
+        case 0xEF: rst(5); break;
+
+        case 0xF0: ld_r8_a8(&regs->af.high); break;
+        case 0xF1: pop_r16(&regs->af); break;
+        case 0xF2: unimplemented_exception("LD A, (C)", 2, 1); break;
+        case 0xF3: unimplemented_exception("DI", 1, 1); break;
+        case 0xF4: unimplemented_exception("INVALID", 0, 0);
+        case 0xF5: push_r16(&regs->af); break;
+        case 0xF6: or_r8_d8(&regs->af.high); break; // TODO
+        case 0xF7: rst(6); break;
+        case 0xF8: ld_r16_sps8(&regs->hl); break; // TODO
+        case 0xF9: ld_r16_r16(regs->hl, &regs->sp); // TODO
+        case 0xFA: ld_r8_a16(&regs->af.high); break; // TODO
+        case 0xFB: unimplemented_exception("EI", 1, 1); break;
+        case 0xFC: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xFD: unimplemented_exception("INVALID", 0, 0); break;
+        case 0xFE: cmp_r8_d8(regs->af.high); break;
+        case 0xFF: rst(7); break;
         
         case 0xCB: // Secondary switch table for 16-bit instructions.
             switch (state->exec_op[1]) {
