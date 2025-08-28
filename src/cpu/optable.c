@@ -30,21 +30,21 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x04: inc_r8(&regs->bc.high); break;
         case 0x05: dec_r8(&regs->bc.high); break;
         case 0x06: ld_r8_d8(&regs->bc.high); break;
-        case 0x07: unimplemented_exception("RLCA", 1, 1); break; // TODO: RLCA
+        case 0x07: unimplemented_exception("RLCA", 1, 1); break;
         case 0x08: ld_a16_sp16(); break;
         case 0x09: add_r16_r16(&regs->hl.reg16, regs->bc.reg16); break;
         case 0x0A: ld_r8_ra16(&regs->af.high, regs->bc.reg16); break;
         case 0x0B: dec_r16(&regs->bc.reg16); break;
-        case 0x0C: inc_r8(&regs->bc.low); break; // Cast of &bc to uint8_t* + 1 will take &c
+        case 0x0C: inc_r8(&regs->bc.low); break;
         case 0x0D: dec_r8(&regs->bc.low); break;
         case 0x0E: ld_r8_d8(&regs->bc.low); break;
         case 0x0F: unimplemented_exception("RRCA", 1, 1); break;
 
-        case 0x10: unimplemented_exception("STOP", 1, 2); break; // TODO: STOP
+        case 0x10: unimplemented_exception("STOP", 1, 2); break;
         case 0x11: ld_r16_d16(&regs->de.reg16); break;
         case 0x12: ld_ra16_r8(regs->de.reg16, regs->af.high); break;
         case 0x13: inc_r16(&regs->de.reg16); break;
-        case 0x14: inc_r8(&regs->de.high); break; // Cast of &de to uint8_t* will take &d
+        case 0x14: inc_r8(&regs->de.high); break;
         case 0x15: dec_r8(&regs->de.high); break;
         case 0x16: ld_r8_d8(&regs->de.high); break;
         case 0x17: unimplemented_exception("RLA", 1, 1); break;
@@ -61,7 +61,7 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0x21: ld_r16_d16(&regs->hl.reg16); break;
         case 0x22: ld_ra16_r8(regs->hl.reg16, regs->af.high); regs->hl.reg16++; break;
         case 0x23: inc_r16(&regs->hl.reg16); break;
-        case 0x24: inc_r8(&regs->hl.high); break; // Cast of &hl to uint8_t* will take &h
+        case 0x24: inc_r8(&regs->hl.high); break;
         case 0x25: dec_r8(&regs->hl.high); break;
         case 0x26: ld_r8_d8(&regs->hl.high); break;
         case 0x27: unimplemented_exception("DAA", 1, 1); break;
@@ -275,12 +275,12 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0xE6: and_d8(&regs->af.high); break;
         case 0xE7: rst(4); break;
         case 0xE8: add_r16_s8(&regs->sp.reg16); break;
-        case 0xE9: jmp_r16(regs->hl); break; // TODO
-        case 0xEA: ld_a16_r8(regs->af.high); break; // TODO
+        case 0xE9: jmp_r16(regs->hl.reg16); break;
+        case 0xEA: ld_a16_r8(regs->af.high); break;
         case 0xEB: unimplemented_exception("INVALID", 0, 0); break;
         case 0xEC: unimplemented_exception("INVALID", 0, 0); break;
         case 0xED: unimplemented_exception("INVALID", 0, 0); break;
-        case 0xEE: xor_d8_r8(&regs->af.high); break; // TODO
+        case 0xEE: xor_r8_d8(&regs->af.high); break;
         case 0xEF: rst(5); break;
 
         case 0xF0: ld_r8_a8(&regs->af.high); break;
@@ -289,11 +289,11 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
         case 0xF3: unimplemented_exception("DI", 1, 1); break;
         case 0xF4: unimplemented_exception("INVALID", 0, 0);
         case 0xF5: push_r16(&regs->af); break;
-        case 0xF6: or_r8_d8(&regs->af.high); break; // TODO
+        case 0xF6: or_r8_d8(&regs->af.high); break;
         case 0xF7: rst(6); break;
-        case 0xF8: ld_r16_sps8(&regs->hl); break; // TODO
-        case 0xF9: ld_r16_r16(regs->hl, &regs->sp); // TODO
-        case 0xFA: ld_r8_a16(&regs->af.high); break; // TODO
+        case 0xF8: ld_r16_sps8(&regs->hl.reg16); break; // 16-bit carry to implement
+        case 0xF9: ld_r16_r16(regs->hl.reg16, &regs->sp.reg16);
+        case 0xFA: ld_r8_a16(&regs->af.high); break;
         case 0xFB: unimplemented_exception("EI", 1, 1); break;
         case 0xFC: unimplemented_exception("INVALID", 0, 0); break;
         case 0xFD: unimplemented_exception("INVALID", 0, 0); break;

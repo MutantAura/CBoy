@@ -60,6 +60,41 @@ void ld_ra16_d8(uint16_t adr) {
     cycle_cost = 2;
 }
 
+void ld_a16_r8(uint8_t value) {
+    ram[(state->exec_op[2] << 8) | state->exec_op[1]] = value;
+
+    regs->pc.reg16 += 3;
+    cycle_cost = 4;
+}
+
+void ld_r16_sps8(uint16_t* reg) {
+    uint16_t new_sp = regs->sp.reg16 + (int8_t)state->exec_op[1];
+
+    set_flag(ZERO, 0);
+    set_flag(HALF, 0);
+    set_flag(SUB, (int8_t)state->exec_op[1] < 0);
+    // TODO: figure out signed 16-bit carry?
+
+    *reg = new_sp;
+
+    regs->pc.reg16 += 2;
+    cycle_cost = 3;
+}
+
+void ld_r16_r16(uint16_t value, uint16_t* reg) {
+    *reg = value;
+
+    regs->pc.reg16 += 1;
+    cycle_cost = 2;
+}
+
+void ld_r8_a16(uint8_t* reg) {
+    *reg = ram[(state->exec_op[2] << 8) | state->exec_op[1]];
+
+    regs->pc.reg16 += 3;
+    cycle_cost = 4;
+}
+
 // INCREMENT/DECREMENT INSTRUCTIONS
 void inc_r16(uint16_t* reg) {
     (*reg)++;
@@ -366,6 +401,7 @@ void and_d8(uint8_t* reg) {
     set_flag(CARRY, 0);
 
     regs->pc.reg16 += 2;
+    cycle_cost = 2;
 }
 
 void xor_r8_r8(uint8_t* reg, uint8_t value) {
@@ -389,6 +425,13 @@ void xor_r8_ra16(uint8_t* reg, uint16_t adr) {
     set_flag(CARRY, 0);
 
     regs->pc.reg16++;
+    cycle_cost = 2;
+}
+
+void xor_r8_d8(uint8_t* reg) {
+    *reg ^= state->exec_op[1];
+
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -425,6 +468,13 @@ void or_r8_ra16(uint8_t* reg, uint16_t adr) {
     set_flag(CARRY, 0);
 
     regs->pc.reg16++;
+    cycle_cost = 2;
+}
+
+void or_r8_d8(uint8_t* reg) {
+    *reg |= state->exec_op[1];
+
+    regs->pc.reg16 += 2;
     cycle_cost = 2;
 }
 
@@ -540,6 +590,12 @@ void jmp_f(flag_t flag) {
     }
 
     cycle_cost = 3;
+}
+
+void jmp_r16(uint16_t adr) {
+    regs->pc.reg16 = adr;
+
+    cycle_cost = 1;
 }
 
 // Stack flow/control opc.reg16odes
