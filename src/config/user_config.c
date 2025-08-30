@@ -6,17 +6,19 @@
 config_t default_config = {
     .display_scale = 5,
     .frequency_override = 0,
-    .variant = DMG
+    .variant = DMG,
+    .cart_path = NULL
 };
 
 config_t* create_config(const int argc, char** args) {
     config_t* config_ptr = malloc(sizeof(config_t));
     *config_ptr = default_config;
+    config_ptr->cart_path = args[1];
 
     // User has provided additional CLI args beyond program + ROM dest.
     // Edit default values in this case.
-    if (argc > 2) {
-        for (int i = 0; i < argc; i++) {
+    if (argc > 3) {
+        for (int i = 2; i < argc; i++) {
             int arg_chars = strlen(args[i]);
 
             int current_char = 0;

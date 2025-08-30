@@ -7,23 +7,19 @@ uint8_t* ram;
 registers_t* regs;
 int cycle_cost;
 
-int tick_cpu(cpu_t* ctx, uint8_t* pool) {
+int tick_cpu(cpu_t* ctx, uint8_t* pool, uint8_t* cart_buff) {
     state = ctx;
     ram = pool;
     regs = &ctx->registers;
     
     // If an instruction was fetched last cycle, execute it this cycle and fetch the next instruction.
     // TODO: check if program counter is placed at fetch op or excecute op?
-    if (state->fetch_op != NULL) {
-        state->exec_op = state->fetch_op;
-    }
-    state->fetch_op = &ram[regs->pc.reg16];
-
+    state->exec_op = state->fetch_op;
     printf("%04x %02x %02x\n", regs->pc.reg16, state->exec_op[0], state->exec_op[1]);
 
     // Opcode switch tree - best way to group common opcodes?
     switch(state->exec_op[0]) {
-        case 0x00: regs->pc.reg16++; break; // NOP
+        case 0x00: regs->pc.reg16++; cycle_cost = 1; break; // NOP
         case 0x01: ld_r16_d16(&regs->bc.reg16); break;
         case 0x02: ld_ra16_r8(regs->bc.reg16, regs->af.high); break;
         case 0x03: inc_r16(&regs->bc.reg16); break;
@@ -308,6 +304,8 @@ int tick_cpu(cpu_t* ctx, uint8_t* pool) {
 
         default: unimplemented_exception("Unknown", 1, 1); break;
     }
+
+    state->fetch_op = &ram[regs->pc.reg16];
 
     return cycle_cost;
 }

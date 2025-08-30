@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c2x -Wall -Werror -Wextra -O2
+CFLAGS=-std=c2x -Wall -Werror -Wextra -O0
 SOURCES=$(shell find src -type f -iname '*.c')
 TARGET=-o build/cboy
 PKGS=-lm `pkg-config --cflags --libs sdl2`

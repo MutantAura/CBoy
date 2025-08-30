@@ -12,60 +12,46 @@ SDL_Window* main_window;
 SDL_Renderer* renderer;
 SDL_Event queue;
 
+int return_val = 0;
+
 // Prototypes
 int init_sdl(config_t*);
 void process_queue(SDL_Event*, device_t*);
 device_t* init_gb_device(config_t*);
 
 int main(int argc, char** argv) {
-    
     // 1. Handle CLI args
     config_t* config = create_config(argc, argv);
     if (config == NULL) {
         puts("Failed to create user-configuration. Aborting...");
-        goto cleanup4;
+        free(config); return 1;
     }
 
     // 2. Init GB device
     device_t* device = init_gb_device(config);
+    if (device == NULL) {
+        puts("Failed to correctly initialise the GameBoy device.");
+        return_val = 2; goto cleanup;
+    }
 
     // 3. Init SDL
     if (init_sdl(config) == 0) {
         puts("Failed to init SDL. Aborting...");
-        goto cleanup3;
-    }
-    
-    // 4. Verify and Load ROM
-    device->cart.buffer = load_rom(argv[1]);
-    if (device->cart.buffer == NULL) {
-        goto cleanup2;
+        return_val = 3; goto cleanup;
     }
 
-    // 4b. Create ROM header
-    device->cart.header = parse_header(device->cart.buffer);
-    if (device->cart.header == NULL) {
-        goto cleanup;
-    }
-
-    // 4c. Setup initial device state based on header data.
-    // TODO: Boot-ROM and don't hardcode this value, read from header.
-    device->cpu_state.fetch_op = device->rom_bank_0 + 0x100;
-
-    // 5. Enter SDL loop
     while (device->power_state == POWER_ON) {
-        // 5a. Poll input
         process_queue(&queue, device);
 
-        // 5b. Tick CPU, uncomment when ready?
         int cycles = 0;
         while (cycles < CPU_FREQUENCY) {
+            int cost = tick_cpu(&device->cpu_state, &device->memory_pool[0], device->cart.buffer);
+
             // An unimplemented instruction will return a cycle cost of -1, in this event, die.
-            int cost = tick_cpu(&device->cpu_state, device->memory_pool);
             if (cost == -1) {
                 device->power_state = POWER_OFF;
                 break;
             }
-
             cycles += cost;
         }
         
@@ -83,18 +69,15 @@ int main(int argc, char** argv) {
     // 6. Cleanup
 cleanup:
     free(device->cart.header);
-cleanup2:
     free(device->cart.buffer);
-cleanup3:
     free(device);
-cleanup4:
     free(config);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(main_window);
     SDL_Quit();
 
-    return 0;
+    return return_val;
 }
 
 int init_sdl(config_t* config) {
@@ -117,27 +100,38 @@ int init_sdl(config_t* config) {
 
 device_t* init_gb_device(config_t* config) {
     device_t* device = calloc(1, sizeof(device_t));
+
+    if (device != NULL) {
+        device->variant = config->variant;
+
+        device->rom_bank_0 = &device->memory_pool[ROM0_START];
+        device->rom_bank_1 = &device->memory_pool[ROM1_START];
+        device->vram = &device->memory_pool[VRAM_START];
+        device->cart_ram = &device->memory_pool[CART_START];
+        device->wram = &device->memory_pool[WRAM0_START];
+        device->echo_ram = &device->memory_pool[ECHO_START];
+        device->oa_ram = &device->memory_pool[OBJ_START];
+        device->reserved = &device->memory_pool[NA_START];
+        device->io_regs = &device->memory_pool[IO_START];
+        device->high_ram = &device->memory_pool[HRAM_START];
+        device->intrpt_reg = &device->memory_pool[INTRPT_START];
+
+        if (config->frequency_override == 0) {
+            device->cpu_state.frequency = CPU_FREQUENCY;
+        } else device->cpu_state.frequency = config->frequency_override;
+
+        device->power_state = POWER_ON;
+
+        device->cart.buffer = load_rom(config->cart_path);
+        device->cart.header = parse_header(device->cart.buffer);
+
+        memcpy(device->rom_bank_0, device->cart.buffer, VRAM_START);
+
+        // TODO: Boot-ROM and don't hardcode this value, read from header.
+        device->cpu_state.registers.pc.reg16 = 0x100;
+        device->cpu_state.fetch_op = device->rom_bank_0 + 0x100;
+    }
     
-    device->variant = config->variant;
-
-    device->rom_bank_0 = &device->memory_pool[ROM0_START];
-    device->rom_bank_1 = &device->memory_pool[ROM1_START];
-    device->vram = &device->memory_pool[VRAM_START];
-    device->cart_ram = &device->memory_pool[CART_START];
-    device->wram = &device->memory_pool[WRAM0_START];
-    device->echo_ram = &device->memory_pool[ECHO_START];
-    device->oa_ram = &device->memory_pool[OBJ_START];
-    device->reserved = &device->memory_pool[NA_START];
-    device->io_regs = &device->memory_pool[IO_START];
-    device->high_ram = &device->memory_pool[HRAM_START];
-    device->intrpt_reg = &device->memory_pool[INTRPT_START];
-
-    if (config->frequency_override == 0) {
-        device->cpu_state.frequency = CPU_FREQUENCY;
-    } else device->cpu_state.frequency = config->frequency_override;
-
-    device->power_state = POWER_ON;
-
     return device;
 }
 

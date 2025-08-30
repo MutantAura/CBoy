@@ -29,6 +29,7 @@ void ld_a16_r8(uint8_t);
 void ld_r16_sps8(uint16_t*);
 void ld_r16_r16(uint16_t, uint16_t*);
 void ld_r8_a16(uint8_t*);
+void ld_r8_a8(uint8_t*);
 
 void inc_r16(uint16_t*);
 void inc_r8(uint8_t*);
@@ -41,6 +42,7 @@ void add_r16_r16(uint16_t*, uint16_t);
 void add_r8_r8(uint8_t*, uint8_t);
 void add_r8_d8(uint8_t*);
 void add_r8_ra16(uint8_t*, uint16_t);
+void add_r16_s8(uint16_t*);
 void adc_r8_r8(uint8_t*, uint8_t);
 void adc_r8_ra16(uint8_t*, uint16_t);
 void adc_r8_d8(uint8_t*);
@@ -62,8 +64,10 @@ void xor_r8_d8(uint8_t*);
 void or_r8_r8(uint8_t*, uint8_t);
 void or_r8_r16(uint8_t*, uint16_t);
 void or_r8_ra16(uint8_t*, uint16_t);
+void or_r8_d8(uint8_t*);
 void cmp_r8_r8(uint8_t, uint8_t);
 void cmp_r8_ra16(uint8_t, uint16_t);
+void cmp_r8_d8(uint8_t);
 
 void jr_s8(int8_t);
 void jr_nz_s8(int8_t);
@@ -84,7 +88,7 @@ void call_a16();
 void call_f_a16(flag_t);
 void call_nf_a16(flag_t);
 
-void rst(int);
+void rst(uint8_t);
 
 void set_flag(flag_t, int);
 int get_flag(flag_t);

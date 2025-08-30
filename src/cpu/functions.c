@@ -95,6 +95,14 @@ void ld_r8_a16(uint8_t* reg) {
     cycle_cost = 4;
 }
 
+// TODO: check implementation (weird quirks with memory range/16 bit operands)
+void ld_r8_a8(uint8_t* reg) {
+    *reg = state->exec_op[1];
+
+    regs->pc.reg16 += 2;
+    cycle_cost = 3;
+}
+
 // INCREMENT/DECREMENT INSTRUCTIONS
 void inc_r16(uint16_t* reg) {
     (*reg)++;
@@ -211,15 +219,15 @@ void add_r8_ra16(uint8_t* reg, uint16_t adr) {
 }
 
 void add_r16_s8(uint16_t* reg) {
-    uint16_t value = *reg + state->exec_op[1];
-
     set_flag(ZERO, 0);
     set_flag(CARRY, 0);
-    set_flag(HALF, ((*reg & MASK8_LOW4) + (state->exec_op[1] & MASK8_LOW4) >> 4));
+    set_flag(HALF, (((*reg & MASK8_LOW4) + (state->exec_op[1] & MASK8_LOW4)) >> 4));
     set_flag(SUB, state->exec_op < 0);
 
     *reg += state->exec_op[1];
 
+    regs->pc.reg16 += 2;
+    cycle_cost = 4;
 }
 
 void adc_r8_r8(uint8_t* reg, uint8_t value) {
@@ -491,15 +499,20 @@ void cmp_r8_r8(uint8_t val1, uint8_t val2) {
 }
 
 void cmp_r8_ra16(uint8_t val1, uint16_t adr) {
-    uint16_t underflow = val1 - ram[adr];
-
-    set_flag(ZERO, underflow == 0);
+    set_flag(ZERO, val1 - ram[adr] == 0);
     set_flag(SUB, 1);
     set_flag(HALF, ((val1 & MASK8_LOW4) - (ram[adr] & MASK8_LOW4)) >> 4);
-    set_flag(CARRY, underflow > UINT8_MAX);
+    set_flag(CARRY, val1 - ram[adr] > val1);
 
     regs->pc.reg16++;
     cycle_cost = 2;
+}
+
+void cmp_r8_d8(uint8_t regv) {
+    set_flag(ZERO, regv - state->exec_op[1] == 0);
+    set_flag(SUB, 1);
+    set_flag(HALF, ((regv & MASK8_LOW4) - (state->exec_op[1] & MASK8_LOW4)) >> 4);
+    set_flag(CARRY, regv - state->exec_op[1] > regv);
 }
 
 // FLOW INSTRUCTIONS
