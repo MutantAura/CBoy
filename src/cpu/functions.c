@@ -728,22 +728,12 @@ void set_flag(flag_t target, int set) {
     // Carry - Set when 8 bit addition > 0xFF, 16 bit addition > 0xFFFF, subtraction < 0, when rotation shifts out a "1".
     // Sub - Is instruction a subtraction operation? Simples.
     // Half - Set when there is a carry out of bit 3 (u8 xxxx Xxxx) or bit 11 (u16 (xxxx Xxxx xxxx xxxx).
-    if (set) {
-        switch (target) {
-            case ZERO: regs->af.low |= MASK7; return;
-            case SUB: regs->af.low |= MASK6; return;
-            case HALF: regs->af.low |= MASK5; return;
-            case CARRY: regs->af.low |= MASK4; return;
-            default: puts("Failed to set flag, type unknown."); break;
-        }
-    } else {
-        switch (target) {
-            case ZERO: regs->af.low &= ~MASK7; return;
-            case SUB: regs->af.low &= ~MASK6; return;
-            case HALF: regs->af.low &= ~MASK5; return;
-            case CARRY: regs->af.low &= ~MASK4; return;
-            default: puts("Failed to set flag, type unknown."); break;
-        }
+    switch (target) {
+        case ZERO: set ? (regs->af.low |= MASK7) : (regs->af.low &= ~MASK7); return;
+        case SUB: set ? (regs->af.low |= MASK6) : (regs->af.low &= ~MASK6); return;
+        case HALF: set ? (regs->af.low |= MASK5) : (regs->af.low &= ~MASK5); return;
+        case CARRY: set ? (regs->af.low |= MASK4) : (regs->af.low &= ~MASK4); return;
+        default: puts("Failed to set flag, type unknown."); break;
     }
 }
 

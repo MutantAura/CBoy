@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "config/user_config.h"
 #include "cpu/optable.h"
